@@ -26,7 +26,7 @@ def get_by_id(id):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM experience WHERE id = ?', (id,))
+    cursor.execute('SELECT * FROM experience WHERE idExperience = ?', (id,))
     row = cursor.fetchone()
     conn.close()
     return row
