@@ -1,51 +1,51 @@
 CREATE TABLE raquette(
-   idRaquette VARCHAR(50),
-   nomErreur VARCHAR(50),
+   idRaquette TEXT,
+   nomErreur TEXT,
    imageErreur TEXT,
    PRIMARY KEY(idRaquette)
 );
 
 CREATE TABLE experience(
-   idExperience COUNTER,
+   idExperience INTEGER,
    nom TEXT NOT NULL,
-   nombreRaquette INT NOT NULL,
-   nombreTache INT NOT NULL,
+   nombreRaquette INTEGER NOT NULL,
+   nombreTache INTEGER NOT NULL,
    PRIMARY KEY(idExperience)
 );
 
 CREATE TABLE operateur(
-   idOperateur VARCHAR(50),
-   nom VARCHAR(50) NOT NULL,
-   prenom VARCHAR(50) NOT NULL,
-   nivExp INT NOT NULL,
-   idExperience INT NOT NULL,
+   idOperateur TEXT,
+   nom TEXT NOT NULL,
+   prenom TEXT NOT NULL,
+   nivExp INTEGER NOT NULL,
+   idExperience INTEGER NOT NULL,
    PRIMARY KEY(idOperateur),
-   FOREIGN KEY(idExperience) REFERENCES Experience(idExperience)
+   FOREIGN KEY(idExperience) REFERENCES experience(idExperience)
 );
 
 CREATE TABLE tache(
-   idTache COUNTER,
-   iaPourcentage INT NOT NULL,
-   idOperateur VARCHAR(50) NOT NULL,
+   idTache INTEGER,
+   iaPourcentage INTEGER NOT NULL,
+   idOperateur TEXT NOT NULL,
    PRIMARY KEY(idTache),
    FOREIGN KEY(idOperateur) REFERENCES operateur(idOperateur)
 );
 
 CREATE TABLE analyse(
-   idRaquette VARCHAR(50),
-   idTache INT,
-   dateDebut DATETIME NOT NULL,
-   dateFin DATETIME NOT NULL,
-   isErreur LOGICAL NOT NULL,
+   idRaquette TEXT,
+   idTache INTEGER,
+   dateDebut NUMERIC NOT NULL,
+   dateFin NUMERIC NOT NULL,
+   isErreur NUMERIC NOT NULL,
    PRIMARY KEY(idRaquette, idTache),
    FOREIGN KEY(idRaquette) REFERENCES raquette(idRaquette),
    FOREIGN KEY(idTache) REFERENCES tache(idTache)
 );
 
 CREATE TABLE listeRaquette(
-   idRaquette VARCHAR(50),
-   idExperience INT,
+   idRaquette TEXT,
+   idExperience INTEGER,
    PRIMARY KEY(idRaquette, idExperience),
    FOREIGN KEY(idRaquette) REFERENCES raquette(idRaquette),
-   FOREIGN KEY(idExperience) REFERENCES Experience(idExperience)
+   FOREIGN KEY(idExperience) REFERENCES experience(idExperience)
 );
