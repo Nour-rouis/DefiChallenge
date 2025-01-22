@@ -64,7 +64,7 @@ def update(id, nom, nbRaquette, nbTache):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('UPDATE experience SET nom = ?, nombreRaquette = ?, nombreTache = ? WHERE id = ?', (nom, nbRaquette, nbTache, id))
+    cursor.execute('UPDATE experience SET nom = ?, nombreRaquette = ?, nombreTache = ? WHERE idExperience = ?', (nom, nbRaquette, nbTache, id))
     conn.commit()
     conn.close()
     print("[DATABASE] Experience #", id, " mise à jour")
@@ -78,7 +78,7 @@ def delete(id):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('DELETE FROM experience WHERE id = ?', (id,))
+    cursor.execute('DELETE FROM experience WHERE idExperience = ?', (id,))
     conn.commit()
     conn.close()
     print("[DATABASE] Experience #", id, " supprimée")
