@@ -5,7 +5,7 @@ CREATE TABLE raquette(
    PRIMARY KEY(idRaquette)
 );
 
-CREATE TABLE Experience(
+CREATE TABLE experience(
    idExperience COUNTER,
    nom TEXT NOT NULL,
    nombreRaquette INT NOT NULL,
