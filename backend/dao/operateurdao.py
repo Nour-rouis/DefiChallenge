@@ -12,6 +12,9 @@ def get_all():
     cursor.execute('SELECT * FROM operateur')
     rows = cursor.fetchall()
     conn.close()
+    operateurs = []
+    for row in rows:
+        operateurs.append({"idOperateur": row[0], "nom": row[1], "prenom": row[2], "nivExp": row[3], "idExperience": row[4]})
     return rows
 
 def get_by_id(id):
@@ -29,7 +32,7 @@ def get_by_id(id):
     cursor.execute('SELECT * FROM operateur WHERE idOperateur = ?', (id,))
     row = cursor.fetchone()
     conn.close()
-    return row
+    return {"idOperateur": row[0], "nom": row[1], "prenom": row[2], "nivExp": row[3], "idExperience": row[4]}
 
 def create(nom, prenom, nivExp, idExperience):
     """
@@ -100,4 +103,7 @@ def get_by_idExperience(idExperience):
     cursor.execute('SELECT * FROM operateur WHERE idExperience = ?', (idExperience,))
     rows = cursor.fetchall()
     conn.close()
-    return rows
+    operateurs = []
+    for row in rows:
+        operateurs.append({"idOperateur": row[0], "nom": row[1], "prenom": row[2], "nivExp": row[3], "idExperience": row[4]})
+    return operateurs

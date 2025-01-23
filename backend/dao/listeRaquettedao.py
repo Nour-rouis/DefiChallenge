@@ -12,6 +12,9 @@ def get_all():
     cursor.execute('SELECT * FROM listeRaquette')
     rows = cursor.fetchall()
     conn.close()
+    listeRaquettes = []
+    for row in rows:
+        listeRaquettes.append({"idRaquette": row[0], "idExperience": row[1]})
     return rows
 
 def get_by_idRaquette(idRaquette):
@@ -29,7 +32,7 @@ def get_by_idRaquette(idRaquette):
     cursor.execute('SELECT * FROM listeRaquette WHERE idRaquette = ?', (idRaquette,))
     row = cursor.fetchone()
     conn.close()
-    return row
+    return {"idRaquette": row[0], "idExperience": row[1]}
 
 def get_by_idExperience(idExperience):
     """
@@ -46,7 +49,7 @@ def get_by_idExperience(idExperience):
     cursor.execute('SELECT * FROM listeRaquette WHERE idExperience = ?', (idExperience,))
     row = cursor.fetchone()
     conn.close()
-    return row
+    return {"idRaquette": row[0], "idExperience": row[1]}
 
 def delete(idRaquette, idExperience):
     """

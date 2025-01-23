@@ -12,7 +12,10 @@ def get_all():
     cursor.execute('SELECT * FROM tache')
     rows = cursor.fetchall()
     conn.close()
-    return rows
+    taches = []
+    for row in rows:
+        taches.append({"idTache": row[0], "iaPourcentage": row[1], "idOperateur": row[2]})
+    return taches
 
 def get_by_id(id):
     """
@@ -29,7 +32,7 @@ def get_by_id(id):
     cursor.execute('SELECT * FROM tache WHERE idTache = ?', (id,))
     row = cursor.fetchone()
     conn.close()
-    return row
+    return {"idTache": row[0], "iaPourcentage": row[1], "idOperateur": row[2]}
 
 def create(iaPourcentage, idOperateur):
     """
@@ -102,7 +105,10 @@ def get_by_idOperateur(idOperateur):
     cursor.execute('SELECT * FROM tache WHERE idOperateur = ?', (idOperateur,))
     rows = cursor.fetchall()
     conn.close()
-    return rows
+    taches = []
+    for row in rows:
+        taches.append({"idTache": row[0], "iaPourcentage": row[1], "idOperateur": row[2]})
+    return taches
 
 def get_by_idExperience(idExperience):
     """
@@ -119,4 +125,7 @@ def get_by_idExperience(idExperience):
     cursor.execute('SELECT t.* FROM tache t JOIN operateur o ON t.idOperateur = o.idOperateur WHERE o.idExperience = ?', (idExperience,))
     rows = cursor.fetchall()
     conn.close()
-    return rows
+    taches = []
+    for row in rows:
+        taches.append({"idTache": row[0], "iaPourcentage": row[1], "idOperateur": row[2]})
+    return taches

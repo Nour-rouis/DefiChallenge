@@ -12,7 +12,10 @@ def get_all():
     cursor.execute('SELECT * FROM raquette')
     rows = cursor.fetchall()
     conn.close()
-    return rows
+    raquettes = []
+    for row in rows:
+        raquettes.append({"idRaquette": row[0], "nomErreur": row[1], "imageErreur": row[2]})
+    return raquettes
 
 def get_by_id(id):
     """
@@ -29,7 +32,7 @@ def get_by_id(id):
     cursor.execute('SELECT * FROM raquette WHERE idRaquette = ?', (id,))
     row = cursor.fetchone()
     conn.close()
-    return row
+    return {"idRaquette": row[0], "nomErreur": row[1], "imageErreur": row[2]}
 
 def create(nomErreur, imageErreur):
     """
@@ -94,6 +97,9 @@ def get_by_idExperience(idExperience):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM raquette WHERE idExperience = ?', (idExperience,))
-    row = cursor.fetchone()
+    rows = cursor.fetchall()
     conn.close()
-    return row
+    raquettes = []
+    for row in rows:
+        raquettes.append({"idRaquette": row[0], "nomErreur": row[1], "imageErreur": row[2]})
+    return raquettes

@@ -7,10 +7,9 @@ app = Flask(__name__)
 conn = get_db_connection()
 
 
-@app.route("/")
+@app.route("/getexperiences")
 def index():
     if request.method == "GET":
-
-        data = {"Hello": "World", "experience": expDao.get_by_id(1)}
-
-        return jsonify(data)
+        
+        experiences = expDao.get_all()
+        return jsonify(experiences)

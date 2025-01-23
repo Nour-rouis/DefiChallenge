@@ -12,7 +12,10 @@ def get_all():
     cursor.execute('SELECT * FROM analyse')
     rows = cursor.fetchall()
     conn.close()
-    return rows
+    analyses = []
+    for row in rows:
+        analyses.append({"idRaquette": row[0], "idTache": row[1], "dateDebut": row[2], "dateFin": row[3], "isErreur": row[4]})
+    return analyses
 
 def get_by_ids(idRaquette, idTache):
     """
@@ -30,7 +33,7 @@ def get_by_ids(idRaquette, idTache):
     cursor.execute('SELECT * FROM analyse WHERE idRaquette = ? AND idTache = ?', (idRaquette, idTache))
     row = cursor.fetchone()
     conn.close()
-    return row
+    return {"idRaquette": row[0], "idTache": row[1], "dateDebut": row[2], "dateFin": row[3], "isErreur": row[4]}
 
 def create(idRaquette, idTache, dateDebut, dateFin, isErreur):
     """
@@ -103,4 +106,7 @@ def get_by_idTache(idTache):
     cursor.execute('SELECT * FROM analyse WHERE idTache = ?', (idTache,))
     rows = cursor.fetchall()
     conn.close()
-    return rows
+    analyses = []
+    for row in rows:
+        analyses.append({"idRaquette": row[0], "idTache": row[1], "dateDebut": row[2], "dateFin": row[3], "isErreur": row[4]})
+    return analyses

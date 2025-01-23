@@ -12,7 +12,10 @@ def get_all():
     cursor.execute('SELECT * FROM experience')
     rows = cursor.fetchall()
     conn.close()
-    return rows
+    experiences = []
+    for row in rows:
+        experiences.append({"idExperience": row[0], "nom": row[1], "nombreRaquette": row[2], "nombreTache": row[3]})
+    return experiences
 
 def get_by_id(id):
     """
@@ -29,7 +32,7 @@ def get_by_id(id):
     cursor.execute('SELECT * FROM experience WHERE idExperience = ?', (id,))
     row = cursor.fetchone()
     conn.close()
-    return row
+    return {"idExperience": row[0], "nom": row[1], "nombreRaquette": row[2], "nombreTache": row[3]}
 
 def create(nom, nbRaquette, nbTache):
     """
