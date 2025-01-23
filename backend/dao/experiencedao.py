@@ -14,7 +14,10 @@ def get_all():
     conn.close()
     experiences = []
     for row in rows:
-        experiences.append({"idExperience": row[0], "nom": row[1], "nombreRaquette": row[2], "nombreTache": row[3]})
+        experiences.append({"idExperience": row[0], 
+                            "nom": row[1], 
+                            "nombreRaquette": row[2], 
+                            "nombreTache": row[3]})
     return experiences
 
 def get_by_id(id):
@@ -29,10 +32,14 @@ def get_by_id(id):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM experience WHERE idExperience = ?', (id,))
+    cursor.execute('SELECT * FROM experience WHERE idExperience = ?', 
+                   (id,))
     row = cursor.fetchone()
     conn.close()
-    return {"idExperience": row[0], "nom": row[1], "nombreRaquette": row[2], "nombreTache": row[3]}
+    return {"idExperience": row[0], 
+            "nom": row[1], 
+            "nombreRaquette": row[2], 
+            "nombreTache": row[3]}
 
 def create(nom, nbRaquette, nbTache):
     """
@@ -48,7 +55,8 @@ def create(nom, nbRaquette, nbTache):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO experience (nom, nombreRaquette, nombreTache) VALUES (?, ?, ?)', (nom, nbRaquette, nbTache))
+    cursor.execute('INSERT INTO experience (nom, nombreRaquette, nombreTache) VALUES (?, ?, ?)', 
+                   (nom, nbRaquette, nbTache))
     conn.commit()
     id = cursor.lastrowid
     conn.close()
@@ -67,7 +75,8 @@ def update(id, nom, nbRaquette, nbTache):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('UPDATE experience SET nom = ?, nombreRaquette = ?, nombreTache = ? WHERE idExperience = ?', (nom, nbRaquette, nbTache, id))
+    cursor.execute('UPDATE experience SET nom = ?, nombreRaquette = ?, nombreTache = ? WHERE idExperience = ?', 
+                   (nom, nbRaquette, nbTache, id))
     conn.commit()
     conn.close()
     print("[DATABASE] Experience #", id, " mise à jour")
@@ -81,7 +90,8 @@ def delete(id):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('DELETE FROM experience WHERE idExperience = ?', (id,))
+    cursor.execute('DELETE FROM experience WHERE idExperience = ?', 
+                   (id,))
     conn.commit()
     conn.close()
     print("[DATABASE] Experience #", id, " supprimée")

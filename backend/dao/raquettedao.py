@@ -14,7 +14,9 @@ def get_all():
     conn.close()
     raquettes = []
     for row in rows:
-        raquettes.append({"idRaquette": row[0], "nomErreur": row[1], "imageErreur": row[2]})
+        raquettes.append({"idRaquette": row[0], 
+                          "nomErreur": row[1], 
+                          "imageErreur": row[2]})
     return raquettes
 
 def get_by_id(id):
@@ -29,10 +31,13 @@ def get_by_id(id):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM raquette WHERE idRaquette = ?', (id,))
+    cursor.execute('SELECT * FROM raquette WHERE idRaquette = ?', 
+                   (id,))
     row = cursor.fetchone()
     conn.close()
-    return {"idRaquette": row[0], "nomErreur": row[1], "imageErreur": row[2]}
+    return {"idRaquette": row[0], 
+            "nomErreur": row[1], 
+            "imageErreur": row[2]}
 
 def create(nomErreur, imageErreur):
     """
@@ -47,7 +52,8 @@ def create(nomErreur, imageErreur):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO raquette (nomErreur, imageErreur) VALUES (?, ?)', (nomErreur, imageErreur))
+    cursor.execute('INSERT INTO raquette (nomErreur, imageErreur) VALUES (?, ?)', 
+                   (nomErreur, imageErreur))
     conn.commit()
     id = cursor.lastrowid
     conn.close()
@@ -65,7 +71,8 @@ def update(id, nomErreur, imageErreur):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('UPDATE raquette SET nomErreur = ?, imageErreur = ? WHERE idRaquette = ?', (nomErreur, imageErreur, id))
+    cursor.execute('UPDATE raquette SET nomErreur = ?, imageErreur = ? WHERE idRaquette = ?', 
+                   (nomErreur, imageErreur, id))
     conn.commit()
     conn.close()
     print("[DATABASE] Raquette #", id, "mise à jour")
@@ -79,7 +86,8 @@ def delete(id):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('DELETE FROM raquette WHERE idRaquette = ?', (id,))
+    cursor.execute('DELETE FROM raquette WHERE idRaquette = ?', 
+                   (id,))
     conn.commit()
     conn.close()
     print("[DATABASE] Raquette #", id, "supprimée")
@@ -96,10 +104,13 @@ def get_by_idExperience(idExperience):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM raquette WHERE idExperience = ?', (idExperience,))
+    cursor.execute('SELECT * FROM raquette WHERE idExperience = ?', 
+                   (idExperience,))
     rows = cursor.fetchall()
     conn.close()
     raquettes = []
     for row in rows:
-        raquettes.append({"idRaquette": row[0], "nomErreur": row[1], "imageErreur": row[2]})
+        raquettes.append({"idRaquette": row[0], 
+                          "nomErreur": row[1], 
+                          "imageErreur": row[2]})
     return raquettes
