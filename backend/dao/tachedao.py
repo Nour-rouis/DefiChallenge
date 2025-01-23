@@ -14,7 +14,9 @@ def get_all():
     conn.close()
     taches = []
     for row in rows:
-        taches.append({"idTache": row[0], "iaPourcentage": row[1], "idOperateur": row[2]})
+        taches.append({"idTache": row[0], 
+                       "iaPourcentage": row[1], 
+                       "idOperateur": row[2]})
     return taches
 
 def get_by_id(id):
@@ -29,10 +31,13 @@ def get_by_id(id):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM tache WHERE idTache = ?', (id,))
+    cursor.execute('SELECT * FROM tache WHERE idTache = ?', 
+                   (id,))
     row = cursor.fetchone()
     conn.close()
-    return {"idTache": row[0], "iaPourcentage": row[1], "idOperateur": row[2]}
+    return {"idTache": row[0], 
+            "iaPourcentage": row[1], 
+            "idOperateur": row[2]}
 
 def create(iaPourcentage, idOperateur):
     """
@@ -47,7 +52,8 @@ def create(iaPourcentage, idOperateur):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO tache (iaPourcentage, idOperateur) VALUES (?, ?)', (iaPourcentage, idOperateur))
+    cursor.execute('INSERT INTO tache (iaPourcentage, idOperateur) VALUES (?, ?)', 
+                   (iaPourcentage, idOperateur))
     conn.commit()
     id = cursor.lastrowid
     conn.close()
@@ -68,7 +74,8 @@ def update(id, iaPourcentage, idOperateur):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('UPDATE tache SET iaPourcentage = ?, idOperateur = ? WHERE idTache = ?', (iaPourcentage, idOperateur, id))
+    cursor.execute('UPDATE tache SET iaPourcentage = ?, idOperateur = ? WHERE idTache = ?', 
+                   (iaPourcentage, idOperateur, id))
     conn.commit()
     conn.close()
     return True
@@ -85,7 +92,8 @@ def delete(id):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('DELETE FROM tache WHERE idTache = ?', (id,))
+    cursor.execute('DELETE FROM tache WHERE idTache = ?', 
+                   (id,))
     conn.commit()
     conn.close()
     return True
@@ -102,12 +110,15 @@ def get_by_idOperateur(idOperateur):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM tache WHERE idOperateur = ?', (idOperateur,))
+    cursor.execute('SELECT * FROM tache WHERE idOperateur = ?', 
+                   (idOperateur,))
     rows = cursor.fetchall()
     conn.close()
     taches = []
     for row in rows:
-        taches.append({"idTache": row[0], "iaPourcentage": row[1], "idOperateur": row[2]})
+        taches.append({"idTache": row[0], 
+                       "iaPourcentage": row[1], 
+                       "idOperateur": row[2]})
     return taches
 
 def get_by_idExperience(idExperience):
@@ -122,10 +133,13 @@ def get_by_idExperience(idExperience):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('SELECT t.* FROM tache t JOIN operateur o ON t.idOperateur = o.idOperateur WHERE o.idExperience = ?', (idExperience,))
+    cursor.execute('SELECT t.* FROM tache t JOIN operateur o ON t.idOperateur = o.idOperateur WHERE o.idExperience = ?', 
+                   (idExperience,))
     rows = cursor.fetchall()
     conn.close()
     taches = []
     for row in rows:
-        taches.append({"idTache": row[0], "iaPourcentage": row[1], "idOperateur": row[2]})
+        taches.append({"idTache": row[0], 
+                       "iaPourcentage": row[1], 
+                       "idOperateur": row[2]})
     return taches

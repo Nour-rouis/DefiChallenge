@@ -14,7 +14,11 @@ def get_all():
     conn.close()
     analyses = []
     for row in rows:
-        analyses.append({"idRaquette": row[0], "idTache": row[1], "dateDebut": row[2], "dateFin": row[3], "isErreur": row[4]})
+        analyses.append({"idRaquette": row[0], 
+                         "idTache": row[1], 
+                         "dateDebut": row[2], 
+                         "dateFin": row[3], 
+                         "isErreur": row[4]})
     return analyses
 
 def get_by_ids(idRaquette, idTache):
@@ -30,10 +34,15 @@ def get_by_ids(idRaquette, idTache):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM analyse WHERE idRaquette = ? AND idTache = ?', (idRaquette, idTache))
+    cursor.execute('SELECT * FROM analyse WHERE idRaquette = ? AND idTache = ?', 
+                   (idRaquette, idTache))
     row = cursor.fetchone()
     conn.close()
-    return {"idRaquette": row[0], "idTache": row[1], "dateDebut": row[2], "dateFin": row[3], "isErreur": row[4]}
+    return {"idRaquette": row[0], 
+            "idTache": row[1], 
+            "dateDebut": row[2], 
+            "dateFin": row[3], 
+            "isErreur": row[4]}
 
 def create(idRaquette, idTache, dateDebut, dateFin, isErreur):
     """
@@ -51,7 +60,8 @@ def create(idRaquette, idTache, dateDebut, dateFin, isErreur):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO analyse (idRaquette, idTache, dateDebut, dateFin, isErreur) VALUES (?, ?, ?, ?, ?)', (idRaquette, idTache, dateDebut, dateFin, isErreur))
+    cursor.execute('INSERT INTO analyse (idRaquette, idTache, dateDebut, dateFin, isErreur) VALUES (?, ?, ?, ?, ?)', 
+                   (idRaquette, idTache, dateDebut, dateFin, isErreur))
     conn.commit()
     id = cursor.lastrowid
     conn.close()
@@ -71,7 +81,8 @@ def update(idRaquette, idTache, dateDebut, dateFin, isErreur):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('UPDATE analyse SET dateDebut = ?, dateFin = ?, isErreur = ? WHERE idRaquette = ? AND idTache = ?', (dateDebut, dateFin, isErreur, idRaquette, idTache))
+    cursor.execute('UPDATE analyse SET dateDebut = ?, dateFin = ?, isErreur = ? WHERE idRaquette = ? AND idTache = ?', 
+                   (dateDebut, dateFin, isErreur, idRaquette, idTache))
     conn.commit()
     conn.close()
     print("[DATABASE] Analyse #", idRaquette, idTache, " mise à jour")
@@ -86,7 +97,8 @@ def delete(idRaquette, idTache):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('DELETE FROM analyse WHERE idRaquette = ? AND idTache = ?', (idRaquette, idTache))
+    cursor.execute('DELETE FROM analyse WHERE idRaquette = ? AND idTache = ?', 
+                   (idRaquette, idTache))
     conn.commit()
     conn.close()
     print("[DATABASE] Analyse #", idRaquette, idTache, " supprimée")
@@ -103,10 +115,15 @@ def get_by_idTache(idTache):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM analyse WHERE idTache = ?', (idTache,))
+    cursor.execute('SELECT * FROM analyse WHERE idTache = ?', 
+                   (idTache,))
     rows = cursor.fetchall()
     conn.close()
     analyses = []
     for row in rows:
-        analyses.append({"idRaquette": row[0], "idTache": row[1], "dateDebut": row[2], "dateFin": row[3], "isErreur": row[4]})
+        analyses.append({"idRaquette": row[0], 
+                         "idTache": row[1], 
+                         "dateDebut": row[2], 
+                         "dateFin": row[3], 
+                         "isErreur": row[4]})
     return analyses

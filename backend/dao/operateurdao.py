@@ -14,7 +14,11 @@ def get_all():
     conn.close()
     operateurs = []
     for row in rows:
-        operateurs.append({"idOperateur": row[0], "nom": row[1], "prenom": row[2], "nivExp": row[3], "idExperience": row[4]})
+        operateurs.append({"idOperateur": row[0], 
+                           "nom": row[1], 
+                           "prenom": row[2], 
+                           "nivExp": row[3], 
+                           "idExperience": row[4]})
     return rows
 
 def get_by_id(id):
@@ -29,10 +33,15 @@ def get_by_id(id):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM operateur WHERE idOperateur = ?', (id,))
+    cursor.execute('SELECT * FROM operateur WHERE idOperateur = ?', 
+                   (id,))
     row = cursor.fetchone()
     conn.close()
-    return {"idOperateur": row[0], "nom": row[1], "prenom": row[2], "nivExp": row[3], "idExperience": row[4]}
+    return {"idOperateur": row[0], 
+            "nom": row[1], 
+            "prenom": row[2], 
+            "nivExp": row[3], 
+            "idExperience": row[4]}
 
 def create(nom, prenom, nivExp, idExperience):
     """
@@ -49,7 +58,8 @@ def create(nom, prenom, nivExp, idExperience):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO operateur (nom, prenom, nivExp, idExperience) VALUES (?, ?, ?, ?)', (nom, prenom, nivExp, idExperience))
+    cursor.execute('INSERT INTO operateur (nom, prenom, nivExp, idExperience) VALUES (?, ?, ?, ?)', 
+                   (nom, prenom, nivExp, idExperience))
     conn.commit()
     id = cursor.lastrowid
     conn.close()
@@ -69,7 +79,8 @@ def update(id, nom, prenom, nivExp, idExperience):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('UPDATE operateur SET nom = ?, prenom = ?, nivExp = ?, idExperience = ? WHERE idOperateur = ?', (nom, prenom, nivExp, idExperience, id))
+    cursor.execute('UPDATE operateur SET nom = ?, prenom = ?, nivExp = ?, idExperience = ? WHERE idOperateur = ?', 
+                   (nom, prenom, nivExp, idExperience, id))
     conn.commit()
     conn.close()
     print("[DATABASE] Operateur #", id, "mis à jour")
@@ -83,7 +94,8 @@ def delete(id):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('DELETE FROM operateur WHERE idOperateur = ?', (id,))
+    cursor.execute('DELETE FROM operateur WHERE idOperateur = ?', 
+                   (id,))
     conn.commit()
     conn.close()
     print("[DATABASE] Operateur #", id, "supprimé")
@@ -105,5 +117,9 @@ def get_by_idExperience(idExperience):
     conn.close()
     operateurs = []
     for row in rows:
-        operateurs.append({"idOperateur": row[0], "nom": row[1], "prenom": row[2], "nivExp": row[3], "idExperience": row[4]})
+        operateurs.append({"idOperateur": row[0], 
+                           "nom": row[1], 
+                           "prenom": row[2], 
+                           "nivExp": row[3], 
+                           "idExperience": row[4]})
     return operateurs
