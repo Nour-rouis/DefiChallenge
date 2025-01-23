@@ -7,7 +7,7 @@ import Button from '@mui/material/Button';
 import { useNavigate } from 'react-router-dom'; 
 
 export default function Navbar() {
-  const navigate = useNavigate(); // Hook for navigation
+  const navigate = useNavigate(); 
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -18,6 +18,7 @@ export default function Navbar() {
           </Typography>
           <Button color="inherit" onClick={() => navigate('/experience')}>Experience</Button>
           <Button color="inherit" onClick={() => navigate('/users')}>Users</Button>
+ 		<Button  color="inherit" onClick={()=> navigate('/config')}>Configuration</Button>
         </Toolbar>
       </AppBar>
     </Box>
