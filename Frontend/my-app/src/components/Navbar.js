@@ -5,19 +5,22 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import { useNavigate } from 'react-router-dom'; 
-
+import HomeIcon from '@mui/icons-material/Home';
+import PeopleIcon from '@mui/icons-material/People';
+import AddchartIcon from '@mui/icons-material/Addchart';
 export default function Navbar() {
-  const navigate = useNavigate(); // Hook for navigation
+  const navigate = useNavigate(); 
 
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            My App
+            Réparation de raquettes
           </Typography>
-          <Button color="inherit" onClick={() => navigate('/experience')}>Experience</Button>
-          <Button color="inherit" onClick={() => navigate('/users')}>Users</Button>
+          <Button color="inherit" onClick={() => navigate('/experience')} startIcon={<AddchartIcon />} >Experience</Button>
+          <Button color="inherit" onClick={() => navigate('/users')}startIcon={<PeopleIcon />} >Utilisateur</Button>
+          <Button color="inherit" onClick={() => navigate('/')} startIcon={<HomeIcon />}>Accueil</Button>
         </Toolbar>
       </AppBar>
     </Box>
