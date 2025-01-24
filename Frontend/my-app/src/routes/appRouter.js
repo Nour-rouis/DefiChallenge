@@ -9,10 +9,7 @@ const AppRouter = () => {
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route
-          path="/experiences"
-          element={<Experience onSubmit={(r) => console.log(r)} />}
-        />
+        <Route path="/experiences" element={<Experience />} />
         <Route path="/users" element={<Users />} />
       </Routes>
     </Router>
