@@ -38,21 +38,13 @@ def experiencenew():
         nbTache = request.form["nbTache"]
         option = request.form["option"]
 
-        if validation['valid']:
-            id = expDao.create(nom, nbRaquette, nbTache, option)
-            return jsonify(
-                {
-                    'state' : 'success',
-                    'message' : '[SUCCESS] Experience #' + str(id) + ' créée.'
-                }
-            )
-        else:
-            return jsonify(
-                {
-                    'state' : 'error',
-                    'message' : validation['error']
-                }
-            )
+        id = expDao.create(nom, nbRaquette, nbTache, option)
+        return jsonify(
+            {
+                'state' : 'success',
+                'message' : '[SUCCESS] Experience #' + str(id) + ' créée.'
+            }
+        )
 
 @app.route("/experience/<int:idexp>/delete", methods=['GET'])
 def experiencedelete(idexp):
@@ -120,4 +112,20 @@ def newoperator(idexp):
         prenom = request.form['prenom']
         nom = request.form['nom']
         nivExp = request.form['nivExp']
-        
+
+        opDao.create(nom, prenom, nivExp, idexp)
+        return jsonify(
+            {
+                'state' : 'success',
+                'message' : '[SUCCESS] Opérateur #' + str(id) + ' créée pour l\'Experience #' + str(idexp) + '.'
+            }
+        )
+    
+@app.route('/operator/<int:idope>/delete', methods=['GET'])
+def deleteoperator(idope):
+    if request.method== "GET":
+        opDao.delete(idope)
+        return jsonify({
+            'state' : 'success',
+            'message' : '[SUCCESS] Opérateur ' + str(idope) + ' a été supprimé.'
+        })
