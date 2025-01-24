@@ -5,6 +5,7 @@ import Experience from '../pages/Experience';
 import Users from '../pages/Users';
 import DiscreteSliderValues from '../pages/ConfigTache';
 
+import Home from '../pages/Home';
 const AppRouter = () => {
 	return (
 		<Router>
@@ -17,6 +18,17 @@ const AppRouter = () => {
 			</Routes>
 		</Router>
 	);
+  return (
+    <Router>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/experience" element={<Experience />} />
+        <Route path="/users" element={<Users />} />
+        {/* Add other routes as needed */}
+      </Routes>
+    </Router>
+  );
 };
 
 export default AppRouter;
