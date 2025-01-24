@@ -7,6 +7,8 @@ import {
   TextField,
   Modal,
   Typography,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 
@@ -17,7 +19,7 @@ const OperatorList = () => {
     id: "",
     nom: "",
     prenom: "",
-    nivExp: 0,
+    nivExp: "50%",
   });
   const [isEditing, setIsEditing] = useState(false);
 
@@ -61,7 +63,7 @@ const OperatorList = () => {
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setIsEditing(false);
-    setCurrentOperator({ id: "", nom: "", prenom: "", nivExp: 0 });
+    setCurrentOperator({ id: "", nom: "", prenom: "", nivExp: "50%" });
   };
 
   const handleEdit = (operator) => {
@@ -164,18 +166,21 @@ const OperatorList = () => {
             </Box>
             <Box sx={{ marginBottom: 2 }}>
               <InputLabel htmlFor="nivExp">Niveau d'expérience</InputLabel>
-              <TextField
+              <Select
                 id="nivExp"
-                type="number"
                 fullWidth
                 value={currentOperator.nivExp}
                 onChange={(e) =>
                   setCurrentOperator({
                     ...currentOperator,
-                    nivExp: parseInt(e.target.value, 10),
+                    nivExp: e.target.value,
                   })
                 }
-              />
+              >
+                <MenuItem value="50%">50%</MenuItem>
+                <MenuItem value="100%">100%</MenuItem>
+                <MenuItem value="200%">200%</MenuItem>
+              </Select>
             </Box>
           </Box>
           <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>

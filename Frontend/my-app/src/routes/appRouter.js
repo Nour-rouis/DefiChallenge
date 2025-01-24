@@ -8,17 +8,6 @@ import ConfigTache from '../pages/ConfigTache';
 
 import Home from '../pages/Home';
 const AppRouter = () => {
-	return (
-		<Router>
-			<Navbar />
-			<Routes>
-				<Route path="/experience" element={<Experience />} />
-				<Route path="/users" element={<Users />} />
-				<Route path="/config" element={<ConfigTache />} />
-				{/* Add other routes as needed */}
-			</Routes>
-		</Router>
-	);
   return (
     <Router>
       <Navbar />
