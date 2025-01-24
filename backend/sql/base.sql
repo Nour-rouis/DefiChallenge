@@ -1,16 +1,29 @@
-CREATE TABLE raquette(
-   idRaquette TEXT,
-   nomErreur TEXT,
-   imageErreur TEXT,
-   PRIMARY KEY(idRaquette)
-);
-
 CREATE TABLE experience(
    idExperience INTEGER,
    nom TEXT NOT NULL,
    nombreRaquette INTEGER NOT NULL,
    nombreTache INTEGER NOT NULL,
+   option TEXT NOT NULL,
    PRIMARY KEY(idExperience)
+);
+
+CREATE TABLE erreur(
+   idErreur INTEGER,
+   nom TEXT,
+   image TEXT,
+   tempsDefaut TEXT,
+   idExperience INTEGER NOT NULL,
+   PRIMARY KEY(idErreur),
+   FOREIGN KEY(idExperience) REFERENCES experience(idExperience)
+);
+
+CREATE TABLE raquette(
+   idRaquette TEXT,
+   idErreur INTEGER,
+   idExperience INTEGER NOT NULL,
+   PRIMARY KEY(idRaquette),
+   FOREIGN KEY(idErreur) REFERENCES erreur(idErreur),
+   FOREIGN KEY(idExperience) REFERENCES experience(idExperience)
 );
 
 CREATE TABLE operateur(
@@ -26,6 +39,7 @@ CREATE TABLE operateur(
 CREATE TABLE tache(
    idTache INTEGER,
    iaPourcentage INTEGER NOT NULL,
+   visibiliteKpi TEXT,
    idOperateur TEXT NOT NULL,
    PRIMARY KEY(idTache),
    FOREIGN KEY(idOperateur) REFERENCES operateur(idOperateur)
@@ -40,12 +54,4 @@ CREATE TABLE analyse(
    PRIMARY KEY(idRaquette, idTache),
    FOREIGN KEY(idRaquette) REFERENCES raquette(idRaquette),
    FOREIGN KEY(idTache) REFERENCES tache(idTache)
-);
-
-CREATE TABLE listeRaquette(
-   idRaquette TEXT,
-   idExperience INTEGER,
-   PRIMARY KEY(idRaquette, idExperience),
-   FOREIGN KEY(idRaquette) REFERENCES raquette(idRaquette),
-   FOREIGN KEY(idExperience) REFERENCES experience(idExperience)
 );
