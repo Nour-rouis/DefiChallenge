@@ -9,15 +9,15 @@ import Button from '@mui/material/Button';
 const marks = [
   {
     value: 0,
-    label: '0%',
+    label: <Typography sx={{ fontSize: '1.4rem' }}>0%</Typography>,
   },
   {
     value: 87,
-    label: '87%',
+    label: <Typography sx={{ fontSize: '1.4rem' }}>87%</Typography>,
   },
   {
     value: 100,
-    label: '100%',
+    label: <Typography sx={{ fontSize: '1.4rem' }}>100%</Typography>,
   },
 ];
 
@@ -30,12 +30,12 @@ const KPIs = [
   'KPI2 : Nombre de raquettes contrôlées',
   'KPI3 : Temps écoulé',
   'KPI4 : Taux d avancement',
-  'KPI5 : Productivité à l instant t',
+  'KPI5 : Productivité à l\u2019instant T',
   'KPI6 : Nombre de produits jetés',
   'KPI7 : Nombre de non conformités',
   'KPI8 : Taux de qualité',
   'KPI9 : Prédiction du temps de réparation',
-  'KPI10 : Nombre d erreurs loupées',
+  'KPI10 : Nombre d\u2019erreurs non détectées',
   'KPI11 : Temps restant ',
 ];
 
@@ -61,13 +61,13 @@ export default function ConfigTache() {
       <Typography variant="h1" gutterBottom>
         Task #X
       </Typography>
-      <Typography variant="subtitle1" gutterBottom>
+      <Typography variant="subtitle1" gutterBottom sx={{ fontSize: '1.9rem' }}>
         Niveau de confiance d'IA : 
       </Typography>
-      <Box sx={{ width: 300, margin: '0 auto' }}>
+      <Box sx={{ width: 500, margin: '0 auto' }}>
         <Slider
           aria-label="Restricted values"
-          defaultValue={20}
+          defaultValue={0}
           getAriaValueText={valuetext}
           step={null}
           valueLabelDisplay="auto"
@@ -87,13 +87,13 @@ export default function ConfigTache() {
                     onChange={handleCheckboxChange}
                   />
                 }
-                label={KPI}
+                label={<Typography sx={{ fontSize: '1.6rem' }}>{KPI}</Typography>}
               />
             ))}
           </Box>
         ))}
       </Box>
-<Button variant="contained">Lancer Tache</Button>
+      <Button variant="contained" sx={{ fontSize: '1.7rem' }}>Lancer Tache</Button>
     </Box>
   );
 }
