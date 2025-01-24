@@ -15,8 +15,8 @@ def get_all():
     raquettes = []
     for row in rows:
         raquettes.append({"idRaquette": row[0], 
-                          "nomErreur": row[1], 
-                          "imageErreur": row[2]})
+                          "idErreur": row[1], 
+                          "idExperience": row[2]})
     return raquettes
 
 def get_by_id(id):
@@ -36,10 +36,10 @@ def get_by_id(id):
     row = cursor.fetchone()
     conn.close()
     return {"idRaquette": row[0], 
-            "nomErreur": row[1], 
-            "imageErreur": row[2]}
+            "idErreur": row[1], 
+            "idExperience": row[2]}
 
-def create(nomErreur, imageErreur):
+def create(idErreur, idExperience):
     """
     Crée un nouvel enregistrement dans la table raquette.
     
@@ -52,15 +52,15 @@ def create(nomErreur, imageErreur):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO raquette (nomErreur, imageErreur) VALUES (?, ?)', 
-                   (nomErreur, imageErreur))
+    cursor.execute('INSERT INTO raquette (idErreur, idExperience) VALUES (?, ?)', 
+                   (idErreur, idExperience))
     conn.commit()
     id = cursor.lastrowid
     conn.close()
     print("[DATABASE] Nouvelle Raquette #", id)
     return id
 
-def update(id, nomErreur, imageErreur):
+def update(id, idErreur, idExperience):
     """
     Met à jour un enregistrement de la table raquette selon l'identifiant spécifié.
     
@@ -71,8 +71,8 @@ def update(id, nomErreur, imageErreur):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('UPDATE raquette SET nomErreur = ?, imageErreur = ? WHERE idRaquette = ?', 
-                   (nomErreur, imageErreur, id))
+    cursor.execute('UPDATE raquette SET idErreur = ?, idExperience = ? WHERE idRaquette = ?', 
+                   (idErreur, idExperience, id))
     conn.commit()
     conn.close()
     print("[DATABASE] Raquette #", id, "mise à jour")
@@ -108,9 +108,9 @@ def get_by_idExperience(idExperience):
                    (idExperience,))
     rows = cursor.fetchall()
     conn.close()
-    raquettes = []
+    raquettes = []  
     for row in rows:
         raquettes.append({"idRaquette": row[0], 
-                          "nomErreur": row[1], 
-                          "imageErreur": row[2]})
+                          "idErreur": row[1], 
+                          "idExperience": row[2]})
     return raquettes
