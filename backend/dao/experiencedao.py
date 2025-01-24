@@ -95,3 +95,4 @@ def delete(id):
     conn.commit()
     conn.close()
     print("[DATABASE] Experience #", id, " supprimée")
+

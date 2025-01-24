@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_file
 from connexion import get_db_connection
 import dao.experiencedao as expDao
 import dao.operateurdao as opDao
@@ -103,6 +103,14 @@ def getopsexperience(idexp):
     if request.method == "GET":
         operators = opDao.get_by_idExperience(idexp)
         return jsonify(operators)
+    
+@app.route("/experience/<int:idexp>/showresults", methods=['GET'])
+def getexperienceresult(idexp):
+    if request.method == "GET":
+        return jsonify({"Message" : "Not implemented yet"})
 
-# --- PAGE RAQUETTES --- #
+@app.route("/experience/<int:idexp>/downloadresults")
+def downloadexperienceresults(idexp):
+    path = "./README.md"
+    return send_file(path, as_attachment=True)
 
