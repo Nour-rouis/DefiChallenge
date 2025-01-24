@@ -61,7 +61,7 @@ def experiencedelete(idexp):
         expDao.delete(idexp)
         print("[DELETE] Experience #" + str(idexp) + " a bien été supprimée.")
 
-# --- PAGE ACCUEIL --- #
+# --- PAGE EXPERIENCE --- #
 
 @app.route("/experience/<int:idexp>", methods=['GET'])
 def experience(idexp):
@@ -103,4 +103,6 @@ def getopsexperience(idexp):
     if request.method == "GET":
         operators = opDao.get_by_idExperience(idexp)
         return jsonify(operators)
+
+# --- PAGE RAQUETTES --- #
 
