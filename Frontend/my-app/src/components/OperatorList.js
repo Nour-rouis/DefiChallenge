@@ -2,13 +2,13 @@ import React, { useState } from "react";
 import {
   Box,
   Button,
-  Grid,
+  Grid2 as Grid,
   InputLabel,
   TextField,
   Modal,
   Typography,
 } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
+import CustomDataGrid from "./CustomDataGrid";
 
 const OperatorList = () => {
   const [operators, setOperators] = useState([]);
@@ -91,30 +91,7 @@ const OperatorList = () => {
 
   return (
     <Grid container justifyContent="center" margin="10px">
-      <Box sx={{ height: 400, width: "48%" }}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleOpenDialog}
-          style={{ marginBottom: 16 }}
-        >
-          Ajouter un opérateur
-        </Button>
-        <DataGrid
-          rows={operators}
-          columns={columns}
-          initialState={{
-            pagination: {
-              paginationModel: {
-                pageSize: 5,
-              },
-            },
-          }}
-          pageSizeOptions={[5]}
-          checkboxSelection
-          disableRowSelectionOnClick
-        />
-      </Box>
+      <CustomDataGrid name="Un opérateur" columns={columns} elements={operators} onClickButton={handleOpenDialog}/>
 
       <Modal open={openDialog} onClose={handleCloseDialog}>
         <Box
