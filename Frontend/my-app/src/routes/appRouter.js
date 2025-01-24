@@ -25,6 +25,7 @@ const AppRouter = () => {
         <Route path="/" element={<Home />} />
         <Route path="/experience" element={<Experience />} />
         <Route path="/users" element={<Users />} />
+        <Route path="/config" element={<DiscreteSliderValues />} />
         {/* Add other routes as needed */}
       </Routes>
     </Router>
