@@ -17,7 +17,8 @@ def get_all():
         experiences.append({"idExperience": row[0], 
                             "nom": row[1], 
                             "nombreRaquette": row[2], 
-                            "nombreTache": row[3]})
+                            "nombreTache": row[3],
+                            "option": row[4]})
     return experiences
 
 def get_by_id(id):
@@ -39,9 +40,10 @@ def get_by_id(id):
     return {"idExperience": row[0], 
             "nom": row[1], 
             "nombreRaquette": row[2], 
-            "nombreTache": row[3]}
+            "nombreTache": row[3],
+            "option": row[4]}
 
-def create(nom, nbRaquette, nbTache):
+def create(nom, nbRaquette, nbTache, option):
     """
     Crée un nouvel enregistrement dans la table experience.
     
@@ -55,15 +57,15 @@ def create(nom, nbRaquette, nbTache):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO experience (nom, nombreRaquette, nombreTache) VALUES (?, ?, ?)', 
-                   (nom, nbRaquette, nbTache))
+    cursor.execute('INSERT INTO experience (nom, nombreRaquette, nombreTache, option) VALUES (?, ?, ?, ?)', 
+                   (nom, nbRaquette, nbTache, option))
     conn.commit()
     id = cursor.lastrowid
     conn.close()
     print("[DATABASE] Nouvelle Experience #", id)
     return id
 
-def update(id, nom, nbRaquette, nbTache):
+def update(id, nom, nbRaquette, nbTache, option):
     """
     Met à jour un enregistrement de la table experience selon l'identifiant spécifié.
     
@@ -75,8 +77,8 @@ def update(id, nom, nbRaquette, nbTache):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('UPDATE experience SET nom = ?, nombreRaquette = ?, nombreTache = ? WHERE idExperience = ?', 
-                   (nom, nbRaquette, nbTache, id))
+    cursor.execute('UPDATE experience SET nom = ?, nombreRaquette = ?, nombreTache = ?, option = ? WHERE idExperience = ?', 
+                   (nom, nbRaquette, nbTache, option, id))
     conn.commit()
     conn.close()
     print("[DATABASE] Experience #", id, " mise à jour")

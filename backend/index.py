@@ -16,19 +16,19 @@ def experiences():
         experiences = expDao.get_all()
         return jsonify(experiences)
 
-def valid_experience(nom, nbRaquette, nbTache):
-    error = None
-    if not isinstance(nom, str):
-        error = "[ERROR] Nom incorrect"
-    if not nbRaquette.isdigit():
-        error = "[ERROR] Nombre de raquette incorrect"
-    if not nbTache.isdigit():
-        error = "[ERROR] Nombre de tache incorrect"
+# def valid_experience(nom, nbRaquette, nbTache, option):
+#     error = None
+#     if not isinstance(nom, str):
+#         error = "[ERROR] Nom incorrect"
+#     if not nbRaquette.isdigit():
+#         error = "[ERROR] Nombre de raquette incorrect"
+#     if not nbTache.isdigit():
+#         error = "[ERROR] Nombre de tache incorrect"
     
-    if error == None:
-        return {"valid" : True}
-    else:
-        return {"valid" : False, "error" : error}
+#     if error == None:
+#         return {"valid" : True}
+#     else:
+#         return {"valid" : False, "error" : error}
 
 @app.route("/experience/new", methods=['POST'])
 def experiencenew():
@@ -36,24 +36,15 @@ def experiencenew():
         nom = request.form["nom"]
         nbRaquette = request.form["nbRaquette"]
         nbTache = request.form["nbTache"]
+        option = request.form["option"]
 
-        validation = valid_experience(nom, nbRaquette, nbTache)
-
-        if validation['valid']:
-            id = expDao.create(nom, nbRaquette, nbTache)
-            return jsonify(
-                {
-                    'state' : 'success',
-                    'message' : '[SUCCESS] Experience #' + str(id) + ' créée.'
-                }
-            )
-        else:
-            return jsonify(
-                {
-                    'state' : 'error',
-                    'message' : validation['error']
-                }
-            )
+        id = expDao.create(nom, nbRaquette, nbTache, option)
+        return jsonify(
+            {
+                'state' : 'success',
+                'message' : '[SUCCESS] Experience #' + str(id) + ' créée.'
+            }
+        )
 
 @app.route("/experience/<int:idexp>/delete", methods=['GET'])
 def experiencedelete(idexp):
@@ -74,11 +65,7 @@ def getopsexperience(idexp):
 @app.route("/experience/<int:idexp>", methods=['GET'])
 def experience(idexp):
     if request.method == "GET":
-        nom = request.form["nom"]
-        nbRaquette = request.form["nbRaquette"]
-        nbTache = request.form["nbTache"]
-
-        experience = expDao.get_by_id(idexp, nom, nbRaquette, nbTache)
+        experience = expDao.get_by_id(idexp)
         return jsonify(experience)
 
 @app.route("/experience/<int:idexp>/update", methods=['POST'])
@@ -87,11 +74,12 @@ def experienceupdate(idexp):
         nom = request.form["nom"]
         nbRaquette = request.form["nbRaquette"]
         nbTache = request.form["nbTache"]
+        option = request.form["option"]
 
         validation = valid_experience(nom, nbRaquette, nbTache)
 
         if validation['valid']:
-            expDao.update(idexp, nom, nbRaquette, nbTache)
+            expDao.update(idexp, nom, nbRaquette, nbTache, option)
             return jsonify(
                 {
                     'state' : 'success',
@@ -116,3 +104,28 @@ def downloadexperienceresults(idexp):
     path = "./README.md"
     return send_file(path, as_attachment=True)
 
+# --- PAGE CREATE USER --- #
+
+@app.route("/experience/<int:idexp>/operator/new", methods=['POST'])
+def newoperator(idexp):
+    if request.method == "POST":
+        prenom = request.form['prenom']
+        nom = request.form['nom']
+        nivExp = request.form['nivExp']
+
+        opDao.create(nom, prenom, nivExp, idexp)
+        return jsonify(
+            {
+                'state' : 'success',
+                'message' : '[SUCCESS] Opérateur #' + str(id) + ' créée pour l\'Experience #' + str(idexp) + '.'
+            }
+        )
+    
+@app.route('/operator/<int:idope>/delete', methods=['GET'])
+def deleteoperator(idope):
+    if request.method== "GET":
+        opDao.delete(idope)
+        return jsonify({
+            'state' : 'success',
+            'message' : '[SUCCESS] Opérateur ' + str(idope) + ' a été supprimé.'
+        })
