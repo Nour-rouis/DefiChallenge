@@ -46,6 +46,7 @@ const Home = () => {
   const textFields = [
     <TextField
       id="nom"
+      label="Nom"
       fullWidth
       value={actions.currentRow.nom}
       onChange={(e) =>

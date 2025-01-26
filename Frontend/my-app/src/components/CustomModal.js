@@ -1,10 +1,9 @@
-import { Box, Button, InputLabel, Modal, Typography } from "@mui/material";
+import { Box, Button, Modal, Typography } from "@mui/material";
 
 const CustomModal = ({ title, open, onClose, onValid, textFields, isEditing=false}) => {
 
     const textFieldsMapped = textFields.map((element) => (
         <Box sx={{ marginBottom: 2 }} key={element.props.id}>
-            <InputLabel>{String(element.props.id).charAt(0).toUpperCase() + String(element.props.id).slice(1)}</InputLabel>
             {element}
         </Box>
     ));

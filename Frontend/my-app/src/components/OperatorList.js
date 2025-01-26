@@ -49,6 +49,7 @@ const OperatorList = () => {
   const textFields = [
     <TextField
       id="nom"
+      label="Nom"
       fullWidth
       value={actions.currentRow.nom}
       onChange={(e) =>
@@ -60,6 +61,7 @@ const OperatorList = () => {
     />,
     <TextField
       id="prenom"
+      label="Prenom"
       fullWidth
       value={actions.currentRow.prenom}
       onChange={(e) =>
@@ -71,6 +73,7 @@ const OperatorList = () => {
     />,
     <TextField
       id="nivExp"
+      label="Niveau d'experience"
       type="number"
       fullWidth
       value={actions.currentRow.nivExp}
