@@ -14,10 +14,10 @@ const OperatorList = () => {
   const actions = useHandleActions({ id: "", nom: "", prenom: "", nivExp: 50 }, "P");
 
   const columns = [
-    { field: "id", headerName: "ID d'operateur", width: 150 },
+    { field: "id", headerName: "ID d'opérateur", width: 150 },
     { field: "nom", headerName: "Nom", width: 150 },
-    { field: "prenom", headerName: "Prenom", width: 150 },
-    { field: "nivExp", headerName: "Niveau d'experience", width: 160 },
+    { field: "prenom", headerName: "Prénom", width: 150 },
+    { field: "nivExp", headerName: "Niveau d'expérience", width: 160 },
     {
       field: "actions",
       headerName: "Actions",
@@ -63,7 +63,7 @@ const OperatorList = () => {
     />,
     <TextField
       id="prenom"
-      label="Prenom"
+      label="Prénom"
       fullWidth
       value={actions.currentRow.prenom}
       onChange={(e) =>

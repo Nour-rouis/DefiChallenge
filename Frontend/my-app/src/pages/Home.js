@@ -14,7 +14,7 @@ const Home = () => {
 
   const columns = [
     { field: "id", headerName: "ID d'expérience", width: 150 },
-    { field: "nom", headerName: "Nom de l'expérience", width: 150 },
+    { field: "nom", headerName: "Nom", width: 150 },
     {
       field: "actions",
       headerName: "Actions",
