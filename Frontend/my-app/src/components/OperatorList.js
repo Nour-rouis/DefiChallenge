@@ -2,6 +2,8 @@ import {
   Box,
   Button,
   Grid2 as Grid,
+  MenuItem,
+  Select,
   TextField,
 } from "@mui/material";
 import CustomDataGrid from "./CustomDataGrid";
@@ -9,7 +11,7 @@ import CustomModal from "./CustomModal";
 import { useHandleActions } from "./useHandleActions";
 
 const OperatorList = () => {
-  const actions = useHandleActions({ id: "", nom: "", prenom: "", nivExp: 0 }, "P");
+  const actions = useHandleActions({ id: "", nom: "", prenom: "", nivExp: 50 }, "P");
 
   const columns = [
     { field: "id", headerName: "ID d'operateur", width: 150 },
@@ -44,7 +46,7 @@ const OperatorList = () => {
     },
   ];
 
-  
+
 
   const textFields = [
     <TextField
@@ -71,27 +73,30 @@ const OperatorList = () => {
         })
       }
     />,
-    <TextField
+    <Select
       id="nivExp"
       label="Niveau d'experience"
-      type="number"
       fullWidth
       value={actions.currentRow.nivExp}
       onChange={(e) =>
         actions.setCurrentRow({
           ...actions.currentRow,
-          nivExp: parseInt(e.target.value, 10),
+          nivExp: e.target.value,
         })
       }
-    />,
+    >
+      <MenuItem value="50%">50%</MenuItem>
+      <MenuItem value="100%">100%</MenuItem>
+      <MenuItem value="200%">200%</MenuItem>
+    </Select>
   ];
 
   return (
     <Grid container justifyContent="center" margin="10px">
       <CustomDataGrid name="Un opérateur" columns={columns} elements={actions.rows} onClickButton={actions.handleOpenDialog} />
 
-      <CustomModal title="Un opérateur" open={actions.openDialog} onClose={actions.handleCloseDialog} onValid={actions.handleSave} textFields={textFields} isEditing={actions.isEditing} />
-    </Grid>
+  <CustomModal title="Un opérateur" open={actions.openDialog} onClose={actions.handleCloseDialog} onValid={actions.handleSave} textFields={textFields} isEditing={actions.isEditing} />
+    </Grid >
   );
 };
 

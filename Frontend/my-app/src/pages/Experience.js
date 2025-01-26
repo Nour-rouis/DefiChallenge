@@ -1,11 +1,8 @@
-import React from 'react'
-import OperatorList from '../components/OperatorList'
+import React from "react";
+import OperatorList from "../components/OperatorList";
 
 const Experience = () => {
-  return (
-    <OperatorList /> 
-    // Juste pour test, à changer
-  )
-}
+  return <div>Experience</div>;
+};
 
-export default Experience
+export default Experience;
