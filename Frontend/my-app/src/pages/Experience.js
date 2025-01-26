@@ -2,7 +2,7 @@ import React from "react";
 import OperatorList from "../components/OperatorList";
 
 const Experience = () => {
-  return <div>Experience</div>;
+  return <OperatorList/>;
 };
 
 export default Experience;
