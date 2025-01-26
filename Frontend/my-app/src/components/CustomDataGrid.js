@@ -2,10 +2,10 @@ import { Box, Button } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 
 
-const CustomDataGrid = ({ name, allowAdd = true, columns, elements, onClickButton}) => {
+const CustomDataGrid = ({ name, allowAdd = true, columns, elements, onClickButton, width = "48%"}) => {
 
     return (
-        <Box sx={{ height: 400, width: "48%" }}>
+        <Box sx={{ height: 400, width: width }}>
 
             {allowAdd ? <Button
                 variant="contained"

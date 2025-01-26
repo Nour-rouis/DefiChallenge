@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request, send_file
+from flask_cors import CORS
 from connexion import get_db_connection
 import dao.experiencedao as expDao
 import dao.operateurdao as opDao
@@ -6,6 +7,7 @@ import dao.raquettedao as raqDao
 import dao.tachedao as tacheDao
 
 app = Flask(__name__)
+CORS(app)
 
 conn = get_db_connection()
 
@@ -36,10 +38,9 @@ def experiences():
 def experiencenew():
     if request.method == "POST":
         nom = request.form["nom"]
-        nbRaquette = request.form["nbRaquette"]
-        nbTache = request.form["nbTache"]
+        nbRaquette = request.form["nombreRaquette"]
+        nbTache = request.form["nombreTache"]
         option = request.form["option"]
-
         id = expDao.create(nom, nbRaquette, nbTache, option)
         return jsonify(
             {
@@ -53,6 +54,12 @@ def experiencedelete(idexp):
     if request.method == "GET":
         expDao.delete(idexp)
         print("[DELETE] Experience #" + str(idexp) + " a bien été supprimée.")
+        return jsonify(
+            {
+                'state' : 'success',
+                'message' : '[SUCCESS] Experience #' + str(idexp) + ' supprimé.'
+            }
+        )
 
 # --- PAGE OPERATORS --- #
 

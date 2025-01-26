@@ -51,6 +51,7 @@ export function useHandleActions(defaultRow, prefix="") {  // permet de gérer l
         handleSave,
         handleOpenDialog,
         handleCloseDialog,
+        setRows,
         rows,
     }
     
