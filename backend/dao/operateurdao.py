@@ -19,7 +19,7 @@ def get_all():
                            "prenom": row[2], 
                            "nivExp": row[3], 
                            "idExperience": row[4]})
-    return rows
+    return operateurs
 
 def get_by_id(id):
     """
