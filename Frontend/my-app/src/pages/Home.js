@@ -7,13 +7,15 @@ import ListItemText from '@mui/material/ListItemText';
 import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Box, Typography, Paper, Divider, Fab } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add'; // Importez l'icône d'ajout
+import { useNavigate } from 'react-router-dom'; 
+
+import AddIcon from '@mui/icons-material/Add'; 
 
 function Home() {
     const [newTask, setNewTask] = useState('');
     const [tasks, setTasks] = useState([]);
     const [currentTime, setCurrentTime] = useState(new Date());
-
+    const navigate = useNavigate(); 
     useEffect(() => {
         const timer = setInterval(() => {
             setCurrentTime(new Date());
@@ -86,7 +88,7 @@ function Home() {
                                 secondaryAction={
                                     <>
                                         <IconButton edge="end" aria-label="manage" onClick={() => handleManageTask(task.id)}>
-                                            <Button variant="outlined" size="small">Gérer</Button> {/* Style Outlined pour le bouton Gérer */}
+                                            <Button variant="outlined" size="small" onClick={() => navigate('/experience/gerer')}>Gérer</Button> {/* Style Outlined pour le bouton Gérer */}
                                         </IconButton>
                                         <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteTask(task.id)}>
                                             <DeleteIcon color="error" /> {/* Icône de suppression en rouge */}

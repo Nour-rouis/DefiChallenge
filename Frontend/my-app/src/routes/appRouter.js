@@ -7,6 +7,7 @@ import ConfigTache from '../pages/ConfigTache';
 
 
 import Home from '../pages/Home';
+import GestionExperience from '../pages/GestionExperience';
 const AppRouter = () => {
   return (
     <Router>
@@ -15,6 +16,7 @@ const AppRouter = () => {
         <Route path="/" element={<Home />} />
         <Route path="/experience" element={<Experience />} />
         <Route path="/users" element={<Users />} />
+        <Route path="/experience/gerer" element={<GestionExperience />} />
         <Route path="/config" element={<ConfigTache />} />
         {/* Add other routes as needed */}
       </Routes>
