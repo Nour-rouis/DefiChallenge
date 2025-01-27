@@ -5,6 +5,8 @@ import dao.experiencedao as expDao
 import dao.operateurdao as opDao
 import dao.raquettedao as raqDao
 import dao.tachedao as tacheDao
+import dao.analysedao as anaDao
+import dao.erreurdao as errDao
 
 app = Flask(__name__)
 CORS(app)
@@ -20,19 +22,19 @@ def experiences():
         experiences = expDao.get_all()
         return jsonify(experiences)
 
-# def valid_experience(nom, nbRaquette, nbTache, option):
-#     error = None
-#     if not isinstance(nom, str):
-#         error = "[ERROR] Nom incorrect"
-#     if not nbRaquette.isdigit():
-#         error = "[ERROR] Nombre de raquette incorrect"
-#     if not nbTache.isdigit():
-#         error = "[ERROR] Nombre de tache incorrect"
+def valid_experience(nom, nbRaquette, nbTache, option):
+    error = None
+    if not isinstance(nom, str):
+        error = "[ERROR] Nom incorrect"
+    if not nbRaquette.isdigit():
+        error = "[ERROR] Nombre de raquette incorrect"
+    if not nbTache.isdigit():
+        error = "[ERROR] Nombre de tache incorrect"
     
-#     if error == None:
-#         return {"valid" : True}
-#     else:
-#         return {"valid" : False, "error" : error}
+    if error == None:
+        return {"valid" : True}
+    else:
+        return {"valid" : False, "error" : error}
 
 @app.route("/experience/new", methods=['POST'])
 def experiencenew():
@@ -190,7 +192,6 @@ def countErrorRaquettes(idexp):
         count = raqDao.count_errors_by_idExperience(idexp)
         return jsonify(count)
 
-
 @app.route("/experience/<int:idexp>/operator/<int:idop>/tache/new", methods=['POST'])
 def newTache(idexp, idop):
     if request.method == "POST":
@@ -202,3 +203,30 @@ def newTache(idexp, idop):
             'state' : 'success',
             'message' : '[SUCCESS] Tache #' + str(id) + ' créée pour l\'opérateur #' + str(idop) + ' dans l\'Experience #' + str(idexp) + '.' 
         })
+
+# --- PAGE VERIFICATION --- #
+
+@app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/raquette/<int:idraq>/verification", methods=['POST'])
+def verification(idexp, idop, idtache, idraq):
+    if request.method == "POST":
+        dateDebut = request.form['dateDebut']
+        dateFin = request.form['dateFin']
+        isErreur = request.form['isErreur']
+
+        id = anaDao.create(idraq, idtache, dateDebut, dateFin, isErreur)
+        return jsonify({
+            'state' : 'success',
+            'message' : '[SUCCESS] Verification #' + str(id) + ' créée pour la raquette #' + str(idraq) + ' pour l\'opérateur #' + idop + ' dans l\'Experience #' + str(idexp) + '.'
+        })
+    
+@app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/raquettesrestantes", methods=['GET'])
+def raquettesRestantes(idexp, idop, idtache):
+    if request.method == "GET":
+        raquettes = tacheDao.get_raquettes_restantes(idtache)
+        return jsonify(raquettes)
+    
+@app.route("/experience/<int:idexp>/erreur/<int:iderr>/image", methods=['GET'])
+def raquettesErreur(idexp, iderr):
+    if request.method == "GET":
+        image = errDao.get_by_id(iderr)['image']
+        return send_file(image, as_attachment=True)
