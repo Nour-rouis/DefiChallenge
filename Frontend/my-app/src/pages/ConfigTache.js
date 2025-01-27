@@ -1,5 +1,5 @@
 import React from 'react';
-import Box from '@mui/material/Box';
+import {Grid2 as Grid} from '@mui/material';
 import Typography from '@mui/material/Typography';
 import Slider from '@mui/material/Slider';
 import Checkbox from '@mui/material/Checkbox';
@@ -9,15 +9,15 @@ import Button from '@mui/material/Button';
 const marks = [
   {
     value: 0,
-    label: <Typography sx={{ fontSize: '1.4rem',color:'white' }}>0%</Typography>,
+    label: <Typography sx={{ fontSize: '1.4rem', color: 'white' }}>0%</Typography>,
   },
   {
     value: 87,
-    label: <Typography sx={{ fontSize: '1.4rem',color:'white' }}>87%</Typography>,
+    label: <Typography sx={{ fontSize: '1.4rem', color: 'white' }}>87%</Typography>,
   },
   {
     value: 100,
-    label: <Typography sx={{ fontSize: '1.4rem',color:'white' }}>100%</Typography>,
+    label: <Typography sx={{ fontSize: '1.4rem', color: 'white' }}>100%</Typography>,
   },
 ];
 
@@ -30,12 +30,12 @@ const KPIs = [
   'KPI2 : Nombre de raquettes contrôlées',
   'KPI3 : Temps écoulé',
   'KPI4 : Taux d avancement',
-  'KPI5 : Productivité à l\u2019instant T',
+  'KPI5 : Productivité à l instant t',
   'KPI6 : Nombre de produits jetés',
   'KPI7 : Nombre de non conformités',
   'KPI8 : Taux de qualité',
   'KPI9 : Prédiction du temps de réparation',
-  'KPI10 : Nombre d\u2019erreurs non détectées',
+  'KPI10 : Nombre d erreurs non détectées',
   'KPI11 : Temps restant ',
 ];
 
@@ -57,23 +57,23 @@ export default function ConfigTache() {
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh',marginTop: 2 }}>
-      <Typography variant="h1" gutterBottom>
+    <Grid container flexDirection="row" alignItems="center" justifyContent="center" sx={{ height: '100vh', marginTop: 2 }}>
+      <Typography variant="h2" gutterBottom>
         Task #X
       </Typography>
-  <Box sx={{ width: '100%',width: '90%', backgroundColor: '#3f51b5', padding: 2, borderRadius: 1 }}>
-      <Typography variant="subtitle1" gutterBottom sx={{ fontSize: '1.9rem',color:'white',textAlign: 'center' }}>
-        Niveau de confiance d'IA : 
-      </Typography>
-      <Box sx={{ width: 500, margin: '0 auto' }}>
-        <Slider
-          aria-label="Restricted values"
-          defaultValue={0}
-          getAriaValueText={valuetext}
-          step={null}
-          valueLabelDisplay="auto"
-          marks={marks}
-		  sx={{
+      <Grid item sx={{ width: '90%', backgroundColor: '#3f51b5', padding: 2, borderRadius: 1 }}>
+        <Typography variant="subtitle1" gutterBottom sx={{ fontSize: '1.9rem', color: 'white', textAlign: 'center' }}>
+          Niveau de confiance d'IA : 
+        </Typography>
+        <Grid item sx={{ width: 500, margin: '0 auto' }}>
+          <Slider
+            aria-label="Restricted values"
+            defaultValue={0}
+            getAriaValueText={valuetext}
+            step={null}
+            valueLabelDisplay="auto"
+            marks={marks}
+            sx={{
               color: 'white',
               '& .MuiSlider-thumb': {
                 color: 'white',
@@ -84,36 +84,37 @@ export default function ConfigTache() {
               '& .MuiSlider-rail': {
                 color: 'white',
               },
-}}
-        />
-      </Box>
-      <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', marginTop: 2 }}>
-        {kpiChunks.map((chunk, index) => (
-          <Box key={index} sx={{ width: `${columnWidth}%`, m: 1 }}>
-            {chunk.map((KPI) => (
-              <FormControlLabel
-                key={KPI}
-                control={
-                  <Checkbox
-                    value={KPI}
-                    checked={KPINom.includes(KPI)}
-                    onChange={handleCheckboxChange}
-					 sx={{
+            }}
+          />
+        </Grid>
+        <Grid container justifyContent="center" sx={{ width: '100%', marginTop: 4 }}>
+          {kpiChunks.map((chunk, index) => (
+            <Grid item key={index} sx={{ width: `${columnWidth}%`, m: 1 }}>
+              {chunk.map((KPI) => (
+                <FormControlLabel
+                  key={KPI}
+                  control={
+                    <Checkbox
+                      value={KPI}
+                      checked={KPINom.includes(KPI)}
+                      onChange={handleCheckboxChange}
+                      sx={{
                         color: 'white',
                         '&.Mui-checked': {
                           color: 'white',
                         },
+                        marginBottom: 3,
                       }}
-                  />
-                }
-                label={<Typography sx={{ fontSize: '1.6rem',color:'white' }}>{KPI}</Typography>}
-              />
-            ))}
-          </Box>
-        ))}
-	   </Box>
-      </Box>
-      <Button variant="contained" sx={{ fontSize: '1.7rem',marginTop:2 }}>Lancer Tache</Button>
-    </Box>
+                    />
+                  }
+                  label={<Typography sx={{ fontSize: '1.6rem', color: 'white', marginBottom: 3 }}>{KPI}</Typography>}
+                />
+              ))}
+            </Grid>
+          ))}
+        </Grid>
+      </Grid>
+      <Button variant="contained" sx={{ fontSize: '1.5rem', marginTop: 2 }}>Lancer Tache</Button>
+    </Grid>
   );
 }
