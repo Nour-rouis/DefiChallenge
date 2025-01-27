@@ -8,7 +8,7 @@ import {
   Box,
   InputLabel,
 } from "@mui/material";
-import Grid from "@mui/material/Grid";
+import {Grid2 as Grid} from "@mui/material/Grid";
 import React, { useState } from "react";
 import "../styles/experience.css";
 
@@ -80,7 +80,7 @@ const RaquetteListe = ({ onSubmit }) => {
               value={nombreRaquettes}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
-              inputProps={{ min: 0, max: 100 }}
+              slotProps={{htmlInput: {min: 0, max: 100} }}
             />
           </Box>
         </Grid>

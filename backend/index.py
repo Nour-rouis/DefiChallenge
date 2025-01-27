@@ -1,9 +1,13 @@
 from flask import Flask, jsonify, request, send_file
+from flask_cors import CORS
 from connexion import get_db_connection
 import dao.experiencedao as expDao
 import dao.operateurdao as opDao
+import dao.raquettedao as raqDao
+import dao.tachedao as tacheDao
 
 app = Flask(__name__)
+CORS(app)
 
 conn = get_db_connection()
 
@@ -34,10 +38,9 @@ def experiences():
 def experiencenew():
     if request.method == "POST":
         nom = request.form["nom"]
-        nbRaquette = request.form["nbRaquette"]
-        nbTache = request.form["nbTache"]
+        nbRaquette = request.form["nombreRaquette"]
+        nbTache = request.form["nombreTache"]
         option = request.form["option"]
-
         id = expDao.create(nom, nbRaquette, nbTache, option)
         return jsonify(
             {
@@ -51,6 +54,12 @@ def experiencedelete(idexp):
     if request.method == "GET":
         expDao.delete(idexp)
         print("[DELETE] Experience #" + str(idexp) + " a bien été supprimée.")
+        return jsonify(
+            {
+                'state' : 'success',
+                'message' : '[SUCCESS] Experience #' + str(idexp) + ' supprimé.'
+            }
+        )
 
 # --- PAGE OPERATORS --- #
 
@@ -113,7 +122,7 @@ def newoperator(idexp):
         nom = request.form['nom']
         nivExp = request.form['nivExp']
 
-        opDao.create(nom, prenom, nivExp, idexp)
+        id = opDao.create(nom, prenom, nivExp, idexp)
         return jsonify(
             {
                 'state' : 'success',
@@ -121,11 +130,75 @@ def newoperator(idexp):
             }
         )
     
-@app.route('/operator/<int:idope>/delete', methods=['GET'])
-def deleteoperator(idope):
+@app.route('/experience/<int:idexp>/operator/<int:idope>/delete', methods=['GET'])
+def deleteoperator(idexp, idope):
     if request.method== "GET":
         opDao.delete(idope)
         return jsonify({
             'state' : 'success',
-            'message' : '[SUCCESS] Opérateur ' + str(idope) + ' a été supprimé.'
+            'message' : '[SUCCESS] Opérateur ' + str(idope) + ' dans l\'Experience #' + idexp + ' a été supprimé.'
+        })
+    
+# --- PAGE RAQUETTE --- #
+
+@app.route("/experience/<int:idexp>/raquettes", methods=['GET'])
+def getraquettes(idexp):
+    if request.method == "GET":
+        raquettes = raqDao.get_by_idExperience(idexp)
+        return jsonify(raquettes)
+    
+@app.route("/experience/<int:idexp>/raquette/new", methods=['POST'])
+def newraquettes(idexp):
+    if request.method == "POST":
+        nomRaquette = request.form['nomRaquette']
+        idErreur = request.form['idErreur']
+
+        id = raqDao.create(nomRaquette, idErreur, idexp)
+        return jsonify(
+            {
+                'state' : 'success',
+                'message' : '[SUCCESS] Raquette #' + str(id) + ' créée dans l\'Experience #' + str(idexp) + '.'
+            }
+        )
+    
+@app.route("/experience/<int:idexp>/raquette/<int:idraq>/update", methods=['POST'])
+def updateraquette(idexp, idraq):
+    if request.method == "POST":
+        nomRaquette = request.form['nomRaquette']
+        idErreur = request.form['idErreur']
+
+        raqDao.update(idraq, nomRaquette, idErreur, idexp)
+        return jsonify({
+            'state' : 'success',
+            'message' : '[SUCCESS] Raquette #' + str(idraq) + ' a été mise à jour dans l\'Expérience #' + str(idexp) + '.'
+        })
+    
+@app.route("/experience/<int:idexp>/raquette/<int:idraq>/delete", methods=['GET'])
+def deleteraquette(idexp, idraq):
+    if request.method == "GET":
+        raqDao.delete(idraq)
+        return jsonify({
+            'state': "success",
+            'message': "[SUCCESS] Raquette #" + str(idraq) + ' de l\'Experience #' + str(idexp) + ' a été supprimé.'
+        })
+    
+# --- PAGE CONFIG TACHE --- #
+
+@app.route('/experience/<int:idexp>/raquettes/counterrors', methods=['GET'])
+def countErrorRaquettes(idexp):
+    if request.method == "GET":
+        count = raqDao.count_errors_by_idExperience(idexp)
+        return jsonify(count)
+
+
+@app.route("/experience/<int:idexp>/operator/<int:idop>/tache/new", methods=['POST'])
+def newTache(idexp, idop):
+    if request.method == "POST":
+        iaPourcentage = request.form['iaPourcentage']
+        visibiliteKpi = request.form['visibiliteKpi']
+
+        id = tacheDao.create(iaPourcentage, visibiliteKpi, idop)
+        return jsonify({
+            'state' : 'success',
+            'message' : '[SUCCESS] Tache #' + str(id) + ' créée pour l\'opérateur #' + str(idop) + ' dans l\'Experience #' + str(idexp) + '.' 
         })
