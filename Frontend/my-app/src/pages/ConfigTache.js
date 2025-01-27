@@ -9,15 +9,15 @@ import Button from '@mui/material/Button';
 const marks = [
   {
     value: 0,
-    label: <Typography sx={{ fontSize: '1.4rem' }}>0%</Typography>,
+    label: <Typography sx={{ fontSize: '1.4rem',color:'white' }}>0%</Typography>,
   },
   {
     value: 87,
-    label: <Typography sx={{ fontSize: '1.4rem' }}>87%</Typography>,
+    label: <Typography sx={{ fontSize: '1.4rem',color:'white' }}>87%</Typography>,
   },
   {
     value: 100,
-    label: <Typography sx={{ fontSize: '1.4rem' }}>100%</Typography>,
+    label: <Typography sx={{ fontSize: '1.4rem',color:'white' }}>100%</Typography>,
   },
 ];
 
@@ -57,11 +57,12 @@ export default function ConfigTache() {
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh',marginTop: 2 }}>
       <Typography variant="h1" gutterBottom>
         Task #X
       </Typography>
-      <Typography variant="subtitle1" gutterBottom sx={{ fontSize: '1.9rem' }}>
+  <Box sx={{ width: '100%',width: '90%', backgroundColor: '#3f51b5', padding: 2, borderRadius: 1 }}>
+      <Typography variant="subtitle1" gutterBottom sx={{ fontSize: '1.9rem',color:'white',textAlign: 'center' }}>
         Niveau de confiance d'IA : 
       </Typography>
       <Box sx={{ width: 500, margin: '0 auto' }}>
@@ -72,6 +73,18 @@ export default function ConfigTache() {
           step={null}
           valueLabelDisplay="auto"
           marks={marks}
+		  sx={{
+              color: 'white',
+              '& .MuiSlider-thumb': {
+                color: 'white',
+              },
+              '& .MuiSlider-track': {
+                color: 'white',
+              },
+              '& .MuiSlider-rail': {
+                color: 'white',
+              },
+}}
         />
       </Box>
       <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', marginTop: 2 }}>
@@ -85,15 +98,22 @@ export default function ConfigTache() {
                     value={KPI}
                     checked={KPINom.includes(KPI)}
                     onChange={handleCheckboxChange}
+					 sx={{
+                        color: 'white',
+                        '&.Mui-checked': {
+                          color: 'white',
+                        },
+                      }}
                   />
                 }
-                label={<Typography sx={{ fontSize: '1.6rem' }}>{KPI}</Typography>}
+                label={<Typography sx={{ fontSize: '1.6rem',color:'white' }}>{KPI}</Typography>}
               />
             ))}
           </Box>
         ))}
+	   </Box>
       </Box>
-      <Button variant="contained" sx={{ fontSize: '1.7rem' }}>Lancer Tache</Button>
+      <Button variant="contained" sx={{ fontSize: '1.7rem',marginTop:2 }}>Lancer Tache</Button>
     </Box>
   );
 }
