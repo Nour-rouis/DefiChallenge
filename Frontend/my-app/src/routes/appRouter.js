@@ -14,10 +14,12 @@ const AppRouter = () => {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/users" element={<Users />} />
-        <Route path="/experience/:id" >
-        <Route index element={<GestionExperience />} />
-        <Route path="/experience/gerer/kpi" element={<KpiPage />} />
-        <Route path='raquettes' element={<RaquetteListe/>} />
+        <Route path="/kpi" element={<KpiPage />} /> {/* /experience/:id/gerer/kpi */}
+        <Route path="/experience/:id">
+          <Route index element={<GestionExperience />} />
+          {/* Corrected the nested route path */}
+          
+          <Route path="raquettes" element={<RaquetteListe />} /> {/* Removed the leading slash */}
         </Route>
         <Route path="/config" element={<ConfigTache />} />
       </Routes>
