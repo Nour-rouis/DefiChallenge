@@ -4,7 +4,7 @@ import Navbar from '../components/Navbar';
 import Experience from '../pages/Experience';
 import Users from '../pages/Users';
 import ConfigTache from '../pages/ConfigTache';
-
+import KpiPage from '../pages/KpiPage';
 
 import Home from '../pages/Home';
 import GestionExperience from '../pages/GestionExperience';
@@ -17,6 +17,7 @@ const AppRouter = () => {
         <Route path="/experience" element={<Experience />} />
         <Route path="/users" element={<Users />} />
         <Route path="/experience/gerer" element={<GestionExperience />} />
+        <Route path="/experience/gerer/kpi" element={<KpiPage />} />
         <Route path="/config" element={<ConfigTache />} />
         {/* Add other routes as needed */}
       </Routes>
