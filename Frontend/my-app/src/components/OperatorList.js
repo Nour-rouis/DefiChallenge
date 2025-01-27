@@ -92,8 +92,8 @@ const OperatorList = () => {
   ];
 
   return (
-    <Grid container justifyContent="center" margin="10px">
-      <CustomDataGrid name="Un opérateur" columns={columns} elements={actions.rows} onClickButton={actions.handleOpenDialog} />
+    <Grid width="50%">
+      <CustomDataGrid name="Un opérateur" columns={columns} elements={actions.rows} onClickButton={actions.handleOpenDialog} width="100%" allowAdd={false} noRowsLabel="Aucun opérateur n'a fait cette expérience"/>
 
   <CustomModal title="Un opérateur" open={actions.openDialog} onClose={actions.handleCloseDialog} onValid={actions.handleSave} textFields={textFields} isEditing={actions.isEditing} />
     </Grid >

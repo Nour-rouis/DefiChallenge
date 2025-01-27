@@ -1,7 +1,6 @@
 CREATE TABLE experience(
    idExperience INTEGER,
    nom TEXT NOT NULL,
-   nombreRaquette INTEGER NOT NULL,
    nombreTache INTEGER NOT NULL,
    option TEXT NOT NULL,
    PRIMARY KEY(idExperience)
