@@ -147,3 +147,27 @@ def get_by_idExperience(idExperience):
                        "visibiliteKpi": row[2],
                        "idOperateur": row[3]})
     return taches
+
+def get_raquettes_restantes(idTache):
+    """
+    Récupère toutes les raquettes restantes pour une tâche spécifiée.
+    
+    Args:
+        idTache (int): L'identifiant de la tâche.
+    
+    Returns:
+        list: Une liste de dictionnaires représentant les raquettes restantes.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT r.* FROM raquette r WHERE r.idRaquette NOT IN (SELECT a.idRaquette FROM analyse a WHERE a.idTache = ?)', 
+                   (idTache,))
+    rows = cursor.fetchall()
+    conn.close()
+    raquettes = []
+    for row in rows:
+        raquettes.append({"idRaquette": row[0], 
+                          "nomRaquette": row[1],
+                          "idErreur": row[2], 
+                          "idExperience": row[3]})
+    return raquettes
