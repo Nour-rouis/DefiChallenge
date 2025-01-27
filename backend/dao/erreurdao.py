@@ -33,20 +33,23 @@ def get_by_id(id):
     Returns:
         dict: Un dictionnaire représentant l'enregistrement.
     """
-
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM erreur WHERE idErreur = ?',
-                   (id,))
-    row = cursor.fetchone()
-    conn.close()
-    return {
-        "idErreur": row[0],
-        "nom": row[1],
-        "image": row[2],
-        "tempsDefaut": row[3],
-        "idExperience": row[4]
-    }
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM erreur WHERE idErreur = ?',
+                    (id,))
+        row = cursor.fetchone()
+        conn.close()
+        return {
+            "idErreur": row[0],
+            "nom": row[1],
+            "image": row[2],
+            "tempsDefaut": row[3],
+            "idExperience": row[4]
+        }
+    except:
+        print("[DATABASE] Erreur #" + str(id) + " introuvable")
+        return None
 
 def create(nom, image, tempsDefaut, idExperience):
     """
@@ -68,7 +71,7 @@ def create(nom, image, tempsDefaut, idExperience):
     conn.commit()
     id = cursor.lastrowid
     conn.close()
-    print("[DATABASE] Nouvelle erreur #" + id)
+    print("[DATABASE] Nouvelle erreur #" + str(id))
     return id
 
 def update(id, nom, image, tempsDefaut, idExperience):
@@ -88,6 +91,7 @@ def update(id, nom, image, tempsDefaut, idExperience):
     conn.commit()
     conn.close()
     print('[DATABASE] Erreur #', id, "mis à jour")
+    return True
 
 def delete(id):
     """
@@ -103,6 +107,7 @@ def delete(id):
     conn.commit()
     conn.close()
     print('[DATABASE] Erreur #', id, "supprimé")
+    return True
 
 def get_by_idExperience(idExperience):
     """
