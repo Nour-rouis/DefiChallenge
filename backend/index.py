@@ -1,3 +1,4 @@
+import os
 from flask import Flask, jsonify, request, send_file
 from flask_cors import CORS
 from connexion import get_db_connection
@@ -7,6 +8,8 @@ import dao.raquettedao as raqDao
 import dao.tachedao as tacheDao
 import dao.analysedao as anaDao
 import dao.erreurdao as errDao
+
+imagesFolder = "./images/"
 
 app = Flask(__name__)
 CORS(app)
@@ -22,12 +25,10 @@ def experiences():
         experiences = expDao.get_all()
         return jsonify(experiences)
 
-def valid_experience(nom, nbRaquette, nbTache, option):
+def valid_experience(nom, nbTache):
     error = None
     if not isinstance(nom, str):
         error = "[ERROR] Nom incorrect"
-    if not nbRaquette.isdigit():
-        error = "[ERROR] Nombre de raquette incorrect"
     if not nbTache.isdigit():
         error = "[ERROR] Nombre de tache incorrect"
     
@@ -40,10 +41,9 @@ def valid_experience(nom, nbRaquette, nbTache, option):
 def experiencenew():
     if request.method == "POST":
         nom = request.form["nom"]
-        nbRaquette = request.form["nombreRaquette"]
         nbTache = request.form["nombreTache"]
         option = request.form["option"]
-        id = expDao.create(nom, nbRaquette, nbTache, option)
+        id = expDao.create(nom, nbTache, option)
         return jsonify(
             {
                 'state' : 'success',
@@ -83,14 +83,13 @@ def experience(idexp):
 def experienceupdate(idexp):
     if request.method == "POST":
         nom = request.form["nom"]
-        nbRaquette = request.form["nbRaquette"]
-        nbTache = request.form["nbTache"]
+        nbTache = request.form["nombreTache"]
         option = request.form["option"]
 
-        validation = valid_experience(nom, nbRaquette, nbTache)
+        validation = valid_experience(nom, nbTache)
 
         if validation['valid']:
-            expDao.update(idexp, nom, nbRaquette, nbTache, option)
+            expDao.update(idexp, nom, nbTache, option)
             return jsonify(
                 {
                     'state' : 'success',
@@ -114,6 +113,81 @@ def getexperienceresult(idexp):
 def downloadexperienceresults(idexp):
     path = "./README.md"
     return send_file(path, as_attachment=True)
+
+# --- PAGE ERREUR --- #
+
+@app.route("/experience/<int:idexp>/erreurs", methods=['GET'])
+def geterreurs(idexp):
+    if request.method == "GET":
+        erreurs = errDao.get_by_idExperience(idexp)
+        return jsonify(erreurs)
+    
+def getErreursImages(idexp):
+    erreurs = errDao.get_by_idExperience(idexp)
+    images = []
+    for erreur in erreurs:
+        images.append(erreur['image'])
+    return images
+    
+@app.route("/experience/<int:idexp>/erreur/new", methods=['POST'])
+def newerreur(idexp):
+    if request.method == "POST":
+
+        file = request.files['image']
+
+        if(file.filename == ''):
+            return jsonify({
+                'state' : 'error',
+                'message' : '[ERROR] Aucun fichier sélectionné.'
+            })
+    
+        if file:
+            expFolder = imagesFolder + "exp" + str(idexp) + "/"
+            filename = expFolder + file.filename
+            if not os.path.exists(expFolder):
+                os.makedirs(expFolder)
+            file.save(filename)
+            print("[CREATE] Image " + filename + " enregistrée.")
+            id = errDao.create(request.form['nom'], str(filename), request.form['tempsDefaut'], idexp)
+            return jsonify({
+                    'state' : 'success',
+                    'message' : '[SUCCESS] Erreur #' + str(id) + ' créée pour l\'Experience #' + str(idexp) + '.'
+            }
+            )
+        
+@app.route("/experience/<int:idexp>/erreur/<int:iderr>/update", methods=['POST'])
+def updateerreur(idexp, iderr):
+    if request.method == "POST":
+        file = request.files['image']
+        if file:
+            filename = imagesFolder + "exp" + str(idexp) + "/" + file.filename
+            file.save(filename)
+            print("[UPDATE] Image " + filename + " enregistrée.")
+            errDao.update(iderr, request.form['nom'], filename, request.form['tempsDefaut'], idexp)
+            return jsonify({
+                'state' : 'success',
+                'message' : '[SUCCESS] Erreur #' + str(iderr) + ' a été mise à jour dans l\'Experience #' + str(idexp) + '.'
+            })
+        
+@app.route("/experience/<int:idexp>/erreur/<int:iderr>/delete", methods=['GET'])
+def deleteerreur(idexp, iderr):
+    if request.method == "GET":
+        image = errDao.get_by_id(iderr)['image']
+
+        errDao.delete(iderr)
+
+        if image != None:
+            os.remove(image)
+            print("[DELETE] Image " + image + " supprimée.")
+            imagesError = getErreursImages(idexp)
+            if os.path.exists(imagesFolder + "exp" + str(idexp) + "/") and len(imagesError) == 0:
+                os.rmdir(imagesFolder + "exp" + str(idexp) + "/")
+                print("[DELETE] Dossier exp" + str(idexp) + " supprimé.")
+
+        return jsonify({
+            'state' : 'success',
+            'message' : '[SUCCESS] Erreur #' + str(iderr) + ' de l\'Experience #' + str(idexp) + ' a été supprimé.'
+        })
 
 # --- PAGE CREATE USER --- #
 
@@ -229,4 +303,4 @@ def raquettesRestantes(idexp, idop, idtache):
 def raquettesErreur(idexp, iderr):
     if request.method == "GET":
         image = errDao.get_by_id(iderr)['image']
-        return send_file(image, as_attachment=True)
+        return send_file(image, as_attachment=False)
