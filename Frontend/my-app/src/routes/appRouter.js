@@ -1,10 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import Experience from '../pages/Experience';
 import Users from '../pages/Users';
 import ConfigTache from '../pages/ConfigTache';
-
+import RaquetteListe from '../components/RaquetteListe';
 
 import Home from '../pages/Home';
 import GestionExperience from '../pages/GestionExperience';
@@ -14,11 +13,12 @@ const AppRouter = () => {
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/experience" element={<Experience />} />
         <Route path="/users" element={<Users />} />
-        <Route path="/experience/gerer" element={<GestionExperience />} />
+        <Route path="/experience/:id" >
+        <Route index element={<GestionExperience />} />
+        <Route path='raquettes' element={<RaquetteListe/>} />
+        </Route>
         <Route path="/config" element={<ConfigTache />} />
-        {/* Add other routes as needed */}
       </Routes>
     </Router>
   );

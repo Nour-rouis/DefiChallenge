@@ -5,26 +5,82 @@ import {
   CardContent,
   Typography,
   Modal,
+  IconButton,
   Box,
   InputLabel,
 } from "@mui/material";
-import {Grid2 as Grid} from "@mui/material/Grid";
-import React, { useState } from "react";
+import { useNavigate, useParams } from 'react-router-dom';
+import { Grid2 as Grid } from "@mui/material";
+import React, { useState, useEffect } from "react";
 import "../styles/experience.css";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { createRaquette, getRaquettes, deleteRaquette } from '../utils/RaquetteApi';
 
-const RaquetteListe = ({ onSubmit }) => {
+const RaquetteListe = () => {
   const [raquettes, setRaquettes] = useState([]);
   const [nombreRaquettes, setNombreRaquettes] = useState(0);
   const [open, setOpen] = useState(false);
   const [selectedRaquette, setSelectedRaquette] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const handleUpdate = () => {
-    setRaquettes(
-      Array.from({ length: nombreRaquettes }, (_, i) => ({
-        idRaquette: `Raquette-${i + 1}`,
-        nomErreur: "",
-      }))
-    );
+  const navigate = useNavigate();
+  const { id } = useParams();
+
+  useEffect(() => {
+    const fetchRaquettes = async () => {
+      try {
+        const data = await getRaquettes(id);
+        setRaquettes(data);
+        setNombreRaquettes(data.length)
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching raquettes:', error);
+        setError('Failed to load raquettes');
+        setLoading(false);
+      }
+    };
+
+    fetchRaquettes();
+  }, [id]);
+
+  const handleUpdate = async () => {
+    try {
+      setIsSubmitting(true);
+
+      // Si le nouveau nombre est inférieur au nombre actuel, supprimer les dernières raquettes
+      if (nombreRaquettes < raquettes.length) {
+        const raquettesToDelete = raquettes.slice(nombreRaquettes);
+        for (const raquette of raquettesToDelete) {
+          await deleteRaquette(id, raquette.idRaquette);
+        }
+      }
+      // Si le nouveau nombre est supérieur, créer de nouvelles raquettes
+      else if (nombreRaquettes > raquettes.length) {
+        const newRaquettes = Array.from(
+          { length: nombreRaquettes - raquettes.length },
+          (_, i) => ({
+            idRaquette: `Raquette-${raquettes.length + i + 1}`,
+            nomErreur: "",
+          })
+        );
+
+        for (const raquette of newRaquettes) {
+          await createRaquette(raquette, id);
+        }
+      }
+
+      // Rafraîchir la liste des raquettes
+      const updatedRaquettes = await getRaquettes(id);
+      setRaquettes(updatedRaquettes);
+
+    } catch (error) {
+      console.error('Error updating raquettes:', error);
+      setError('Failed to update raquettes');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleInputChange = (e) => {
@@ -38,6 +94,10 @@ const RaquetteListe = ({ onSubmit }) => {
     }
   };
 
+  const handleBack = () => {
+    navigate('../');
+  };
+
   const handleRaquetteClick = (raquette) => {
     setSelectedRaquette(raquette);
     setOpen(true);
@@ -47,13 +107,31 @@ const RaquetteListe = ({ onSubmit }) => {
     setOpen(false);
   };
 
-  const handleModalSave = () => {
-    setRaquettes((prevRaquettes) =>
-      prevRaquettes.map((r) =>
-        r.idRaquette === selectedRaquette.idRaquette ? selectedRaquette : r
-      )
-    );
-    setOpen(false);
+  const handleModalSave = async () => {
+    try {
+      if (!selectedRaquette) return;
+
+      const formData = new FormData();
+      formData.append('nomRaquette', selectedRaquette.idRaquette);
+      formData.append('idErreur', selectedRaquette.nomErreur || '0');
+
+      const response = await fetch(`/experience/${id}/raquette/${selectedRaquette.idRaquette}/update`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update raquette: ${response.statusText}`);
+      }
+
+      // Refresh the raquettes list after update
+      const updatedRaquettes = await getRaquettes(id);
+      setRaquettes(updatedRaquettes);
+      setOpen(false);
+    } catch (error) {
+      console.error('Error updating raquette:', error);
+      setError('Failed to update raquette');
+    }
   };
 
   const handleModalInputChange = (e) => {
@@ -63,41 +141,52 @@ const RaquetteListe = ({ onSubmit }) => {
     });
   };
 
-  const handleSubmit = () => {
-    onSubmit(raquettes);
-  };
+  if (loading) {
+    return <Typography>Loading...</Typography>;
+  }
+
+  if (error) {
+    return <Typography color="error">{error}</Typography>;
+  }
 
   return (
     <div className="container">
-      <Grid container spacing={2} alignItems="flex-end" justifyContent="start">
-        <Grid item xs={2}>
-          <Box>
-            <InputLabel>Nombre de raquettes</InputLabel>
-            <TextField
+      <Grid container spacing={2} flexDirection="column">
+        <Grid container spacing={2} alignItems={'center'}>
+          <IconButton onClick={handleBack} aria-label="retour">
+            <ArrowBackIcon />
+          </IconButton>
+          <Typography variant="h5">
+            Editer l'experience
+          </Typography>
+        </Grid>
+        <Grid container spacing={2} alignItems="flex-end" justifyContent="start">
+          <Grid item xs={2}>
+            <Box>
+              <InputLabel>Nombre de raquettes</InputLabel>
+              <TextField
+                variant="outlined"
+                fullWidth
+                type="number"
+                value={nombreRaquettes}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                disabled={isSubmitting}
+                slotProps={{ htmlInput: { min: 0, max: 100 } }}
+              />
+            </Box>
+          </Grid>
+          <Grid item>
+            <Button
               variant="outlined"
+              color="primary"
               fullWidth
-              type="number"
-              value={nombreRaquettes}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              slotProps={{htmlInput: {min: 0, max: 100} }}
-            />
-          </Box>
-        </Grid>
-        <Grid item>
-          <Button
-            variant="outlined"
-            color="primary"
-            fullWidth
-            onClick={handleUpdate}
-          >
-            Mettre à jour
-          </Button>
-        </Grid>
-        <Grid item>
-          <Button variant="contained" color="success" onClick={handleSubmit}>
-            Soumettre les raquettes
-          </Button>
+              onClick={handleUpdate}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Mise à jour...' : 'Mettre à jour'}
+            </Button>
+          </Grid>
         </Grid>
       </Grid>
 
@@ -113,9 +202,9 @@ const RaquetteListe = ({ onSubmit }) => {
               }}
               onClick={() => handleRaquetteClick(r)}
             >
-              <CardContent>
+              <CardContent sx={{width : "150px"}}>
                 <Typography variant="h6" component="div">
-                  {r.idRaquette}
+                  {r.nomRaquette}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   {r.nomErreur || "Pas d'erreur"}
@@ -126,7 +215,6 @@ const RaquetteListe = ({ onSubmit }) => {
         ))}
       </Grid>
 
-      {/* Modal */}
       <Modal
         open={open}
         onClose={handleModalClose}

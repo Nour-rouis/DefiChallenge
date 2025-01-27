@@ -22,12 +22,10 @@ def experiences():
         experiences = expDao.get_all()
         return jsonify(experiences)
 
-def valid_experience(nom, nbRaquette, nbTache, option):
+def valid_experience(nom, nbTache):
     error = None
     if not isinstance(nom, str):
         error = "[ERROR] Nom incorrect"
-    if not nbRaquette.isdigit():
-        error = "[ERROR] Nombre de raquette incorrect"
     if not nbTache.isdigit():
         error = "[ERROR] Nombre de tache incorrect"
     
@@ -40,10 +38,9 @@ def valid_experience(nom, nbRaquette, nbTache, option):
 def experiencenew():
     if request.method == "POST":
         nom = request.form["nom"]
-        nbRaquette = request.form["nombreRaquette"]
         nbTache = request.form["nombreTache"]
         option = request.form["option"]
-        id = expDao.create(nom, nbRaquette, nbTache, option)
+        id = expDao.create(nom, nbTache, option)
         return jsonify(
             {
                 'state' : 'success',
@@ -83,14 +80,13 @@ def experience(idexp):
 def experienceupdate(idexp):
     if request.method == "POST":
         nom = request.form["nom"]
-        nbRaquette = request.form["nbRaquette"]
-        nbTache = request.form["nbTache"]
+        nbTache = request.form["nombreTache"]
         option = request.form["option"]
 
-        validation = valid_experience(nom, nbRaquette, nbTache)
+        validation = valid_experience(nom, nbTache)
 
         if validation['valid']:
-            expDao.update(idexp, nom, nbRaquette, nbTache, option)
+            expDao.update(idexp, nom, nbTache, option)
             return jsonify(
                 {
                     'state' : 'success',
