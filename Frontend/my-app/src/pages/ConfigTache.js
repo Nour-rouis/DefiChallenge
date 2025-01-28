@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Slider from '@mui/material/Slider';
@@ -6,6 +7,7 @@ import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Button from '@mui/material/Button';
 import { getNbRaquetteErreur } from '../utils/RaquetteApi';
+import { createTache } from '../utils/tacheApi';
 
 // const marks = [
 //   {
@@ -49,7 +51,7 @@ export default function ConfigTache() {
     setKPINom((prev) =>
       checked ? [...prev, value] : prev.filter((kpi) => kpi !== value)
     );
-  }; // todoo : acheter des capotes xxs
+  };
 
   const handleGetNbRaquetteErreur = async () => {
     try {
@@ -57,6 +59,14 @@ export default function ConfigTache() {
       setRaqErreur(data.count);
     } catch (error) {
       console.error('Erreur lors de la récupération du nombre de raquette erreur:', error);
+    }
+  }
+
+  const handleCreateTache = async (iaNbErreurDetecte, visibiliteKpi, idExp, idOpe) => {
+    try {
+      await createTache(iaNbErreurDetecte, visibiliteKpi, idExp, idOpe);
+    } catch (error) {
+      console.error('Erreur lors de la création de la tache:', error);
     }
   }
 
@@ -74,6 +84,15 @@ export default function ConfigTache() {
   const kpiChunks = [];
   for (let i = 0; i < KPIs.length; i += Math.ceil(KPIs.length / columns)) {
     kpiChunks.push(KPIs.slice(i, i + Math.ceil(KPIs.length / columns)));
+  }
+
+  let temp = useParams();
+
+  const clickButton = () => {
+    let kpiAff = KPINom.keys();
+    let value = parseInt(valuetext);
+
+    console.log(temp);
   }
 
   return (
@@ -114,7 +133,9 @@ export default function ConfigTache() {
           </Box>
         ))}
       </Box>
-<Button variant="contained">Lancer Tache</Button>
+    <Button 
+      variant="contained"
+      onClick={clickButton}>Lancer Tache</Button>
     </Box>
   );
 }

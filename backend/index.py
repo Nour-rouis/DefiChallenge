@@ -282,6 +282,7 @@ def newTache(idexp, idop):
         id = tacheDao.create(iaPourcentage, visibiliteKpi, idop)
         return jsonify({
             'state' : 'success',
+            'id' : id,
             'message' : '[SUCCESS] Tache #' + str(id) + ' créée pour l\'opérateur #' + str(idop) + ' dans l\'Experience #' + str(idexp) + '.' 
         })
 
