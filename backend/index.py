@@ -307,3 +307,50 @@ def raquettesErreur(idexp, iderr):
         image = errDao.get_by_id(iderr)['image']
         return send_file(image, as_attachment=False)
 
+# --- KPIS --- #
+
+@app.route('/experience/<int:idexp>/', methods=['GET'])
+def getKpi1(idexp):
+    if request.method == "GET":
+        exp = expDao.get_by_id(idexp)
+        Tmoy = exp['Tmoy']
+        option = exp['option']
+
+        #Récupération des erreurs pour T_values
+        errors = errDao.get_by_idExperience(idexp)
+        T_values = {}
+        for error in errors:
+            T_values[error['id']] = error['tempsDefaut']
+
+        #Récupération des opérateurs pour XP_VALUES
+        ops = opDao.get_by_idExperience(idexp)
+        Xp_values = {}
+        for op in ops:
+            Xp_values[op['id']] = op['nivExp']
+
+        try:
+            if option == 'A':
+                Tc = Tmoy
+            elif option == 'B':
+                Tc = Tmoy * (30 / 24)
+            elif option == 'C':
+                Tc = Tmoy + sum(T_values.values())
+            elif option == 'D':
+                Tc = (Tmoy) * Xp_values
+            elif option == 'E':
+                Tc = (Tmoy * (30 / 24)) * Xp_values
+            elif option == 'F':
+                Tc = (Tmoy + sum(T_values.values())) * Xp_values
+            else:
+                return jsonify({
+                    'state' : 'error',
+                    'message' : '[ERROR] Option invalide.'
+                }), 400
+
+            # KPI1 -> Temps cible
+            kpi1 = Tc
+        except Exception as e:
+            return jsonify({
+                'state' : 'error',
+                'message' : str(e)
+            }), 500
