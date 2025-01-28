@@ -49,7 +49,7 @@ export default function ConfigTache() {
     setKPINom((prev) =>
       checked ? [...prev, value] : prev.filter((kpi) => kpi !== value)
     );
-  };
+  }; // todoo : acheter des capotes xxs
 
   const handleGetNbRaquetteErreur = async () => {
     try {

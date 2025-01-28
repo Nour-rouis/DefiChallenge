@@ -75,7 +75,7 @@ def update(idRaquette, nomRaquette, idErreur, idExperience):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('UPDATE raquette SET nomRaquette = ?; idErreur = ?, idExperience = ? WHERE idRaquette = ?', 
+    cursor.execute('UPDATE raquette SET nomRaquette = ?, idErreur = ?, idExperience = ? WHERE idRaquette = ?', 
                    (nomRaquette, idErreur, idExperience, idRaquette))
     conn.commit()
     conn.close()

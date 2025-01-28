@@ -178,9 +178,9 @@ function GestionExperience() {
                 <Button variant="contained" onClick={handleSave}>
                     Enregistrer les parametres d'experiences
                 </Button>
-                
+
                 <Button variant="contained" color='success'>
-                    Démarrer l'expérience
+                    Démarrer la séquence
                 </Button>
             </Grid>
             <CustomModal isEditing={true} onValid={handleSaveTache} onClose={handleCloseTache} open={open} title={"Le nombre de tâches"} textFields={textFields} />
