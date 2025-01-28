@@ -47,7 +47,7 @@ export default function ConfigTache() {
     setKPINom((prev) =>
       checked ? [...prev, value] : prev.filter((kpi) => kpi !== value)
     );
-  };
+  }; // todoo : acheter des capotes xxs
 
   const columns = 2; // Number of columns
   const columnWidth = 50 / columns; // Width of each column in percentage

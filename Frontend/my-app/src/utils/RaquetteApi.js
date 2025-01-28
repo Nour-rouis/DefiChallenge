@@ -34,3 +34,16 @@ export const deleteRaquette = async (experienceId, raquetteId) => {
 
   return await response.json();
 }
+
+export const updateRaquette = async (experienceId, raquetteId, formData) => {
+  const response = await fetch(`${API_URL}/experience/${experienceId}/raquette/${raquetteId}/update`, {
+    method: 'POST',
+    body: formData
+  });
+
+  if (!response.ok) {
+    throw new Error(`Échec de la mise à jour de la raquette: ${response.statusText}`);
+  }
+
+  return await response.json();
+};
