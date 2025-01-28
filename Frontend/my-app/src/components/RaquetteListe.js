@@ -8,16 +8,20 @@ import {
   IconButton,
   Box,
   InputLabel,
+  FormControl,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import { useNavigate, useParams } from 'react-router-dom';
 import { Grid2 as Grid } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import "../styles/experience.css";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { createRaquette, getRaquettes, deleteRaquette } from '../utils/RaquetteApi';
+import { createRaquette, getRaquettes, deleteRaquette, updateRaquette } from '../utils/RaquetteApi';
 
 const RaquetteListe = () => {
   const [raquettes, setRaquettes] = useState([]);
+  const [erreurs, setErreurs] = useState([]);
   const [nombreRaquettes, setNombreRaquettes] = useState(0);
   const [open, setOpen] = useState(false);
   const [selectedRaquette, setSelectedRaquette] = useState(null);
@@ -29,20 +33,37 @@ const RaquetteListe = () => {
   const { id } = useParams();
 
   useEffect(() => {
-    const fetchRaquettes = async () => {
+    const fetchData = async () => {
       try {
-        const data = await getRaquettes(id);
-        setRaquettes(data);
-        setNombreRaquettes(data.length)
+        setLoading(true);
+        // Récupérer les raquettes
+        const raquettesData = await getRaquettes(id);
+
+        // Récupérer les erreurs
+        const response = await fetch(`http://localhost:5000/experience/${id}/erreurs`);
+        const erreursData = await response.json();
+        setErreurs(erreursData);
+
+        // Mettre à jour les raquettes avec les noms d'erreurs
+        const updatedRaquettes = raquettesData.map(raquette => {
+          const erreur = erreursData.find(err => err.idErreur === raquette.idErreur);
+          return {
+            ...raquette,
+            nomErreur: erreur ? erreur.nom : ""
+          };
+        });
+
+        setRaquettes(updatedRaquettes);
+        setNombreRaquettes(updatedRaquettes.length);
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching raquettes:', error);
-        setError('Failed to load raquettes');
+        console.error('Error fetching data:', error);
+        setError('Failed to load data');
         setLoading(false);
       }
     };
 
-    fetchRaquettes();
+    fetchData();
   }, [id]);
 
   const handleUpdate = async () => {
@@ -112,32 +133,34 @@ const RaquetteListe = () => {
       if (!selectedRaquette) return;
 
       const formData = new FormData();
-      formData.append('nomRaquette', selectedRaquette.idRaquette);
-      formData.append('idErreur', selectedRaquette.nomErreur || '0');
+      formData.append('nomRaquette', selectedRaquette.nomRaquette);
+      formData.append('idErreur', selectedRaquette.idErreur || '0');
 
-      const response = await fetch(`/experience/${id}/raquette/${selectedRaquette.idRaquette}/update`, {
-        method: 'POST',
-        body: formData
-      });
+      await updateRaquette(id, selectedRaquette.idRaquette, formData);
 
-      if (!response.ok) {
-        throw new Error(`Failed to update raquette: ${response.statusText}`);
-      }
-
-      // Refresh the raquettes list after update
+      // Rafraîchir la liste des raquettes avec les noms d'erreurs
       const updatedRaquettes = await getRaquettes(id);
-      setRaquettes(updatedRaquettes);
+      const updatedRaquettesWithErrors = updatedRaquettes.map(raquette => {
+        const erreur = erreurs.find(err => err.idErreur === raquette.idErreur);
+        return {
+          ...raquette,
+          nomErreur: erreur ? erreur.nom : ""
+        };
+      });
+      setRaquettes(updatedRaquettesWithErrors);
       setOpen(false);
     } catch (error) {
-      console.error('Error updating raquette:', error);
-      setError('Failed to update raquette');
+      console.error('Erreur lors de la mise à jour de la raquette:', error);
+      setError('Échec de la mise à jour de la raquette');
     }
   };
 
   const handleModalInputChange = (e) => {
+    const erreur = erreurs.find(err => err.idErreur === e.target.value);
     setSelectedRaquette({
       ...selectedRaquette,
-      [e.target.name]: e.target.value,
+      idErreur: e.target.value,
+      nomErreur: erreur ? erreur.nom : ""
     });
   };
 
@@ -178,6 +201,15 @@ const RaquetteListe = () => {
           </Grid>
           <Grid item>
             <Button
+              variant="contained"
+              color="secondary"
+              onClick={() => navigate('./erreurs')}
+            >
+              Gérer les erreurs
+            </Button>
+          </Grid>
+          <Grid item>
+            <Button
               variant="outlined"
               color="primary"
               fullWidth
@@ -202,7 +234,7 @@ const RaquetteListe = () => {
               }}
               onClick={() => handleRaquetteClick(r)}
             >
-              <CardContent sx={{width : "150px"}}>
+              <CardContent sx={{ width: "150px" }}>
                 <Typography variant="h6" component="div">
                   {r.nomRaquette}
                 </Typography>
@@ -236,36 +268,29 @@ const RaquetteListe = () => {
         >
           {selectedRaquette && (
             <>
-              <Typography
-                id="modal-title"
-                variant="h6"
-                component="h2"
-                sx={{ marginBottom: 2 }}
-              >
-                Modifier {selectedRaquette.idRaquette}
-              </Typography>
-              <Box>
-                <InputLabel>Nom de l'erreur</InputLabel>
-                <TextField
-                  variant="outlined"
-                  fullWidth
-                  name="nomErreur"
-                  value={selectedRaquette.nomErreur}
+              <FormControl fullWidth>
+                <InputLabel>Type d'erreur</InputLabel>
+                <Select
+                  value={selectedRaquette.idErreur || ''}
                   onChange={handleModalInputChange}
-                  sx={{ marginBottom: 2 }}
-                />
+                  name="nomErreur"
+                >
+                  <MenuItem value="">Aucune erreur</MenuItem>
+                  {erreurs.map((erreur) => (
+                    <MenuItem key={erreur.idErreur} value={erreur.idErreur}>
+                      {erreur.nom}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                <Button onClick={handleModalClose} variant="outlined">
+                  Annuler
+                </Button>
+                <Button onClick={handleModalSave} variant="contained" color="primary">
+                  Sauvegarder
+                </Button>
               </Box>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleModalSave}
-                sx={{ marginRight: 1 }}
-              >
-                Sauvegarder
-              </Button>
-              <Button variant="outlined" onClick={handleModalClose}>
-                Annuler
-              </Button>
             </>
           )}
         </Box>
