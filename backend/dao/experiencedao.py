@@ -16,9 +16,9 @@ def get_all():
     for row in rows:
         experiences.append({"idExperience": row[0], 
                             "nom": row[1], 
-                            "nombreRaquette": row[2], 
-                            "nombreTache": row[3],
-                            "option": row[4]})
+                            "nombreTache": row[2],
+                            "option": row[3],
+                            "Tmoy" : row[4]})
     return experiences
 
 def get_by_id(id):
@@ -39,17 +39,16 @@ def get_by_id(id):
     conn.close()
     return {"idExperience": row[0], 
             "nom": row[1], 
-            "nombreRaquette": row[2], 
-            "nombreTache": row[3],
-            "option": row[4]}
+            "nombreTache": row[2],
+            "option": row[3],
+            "Tmoy" : row[4]}
 
-def create(nom, nbRaquette, nbTache, option):
+def create(nom, nbTache, option, Tmoy):
     """
     Crée un nouvel enregistrement dans la table experience.
     
     Args:
         nom (str): Le nom de l'expérience.
-        nbRaquette (int): Le nombre de raquettes utilisées.
         nbTache (int): Le nombre de tâches effectuées.
     
     Returns:
@@ -57,28 +56,27 @@ def create(nom, nbRaquette, nbTache, option):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO experience (nom, nombreRaquette, nombreTache, option) VALUES (?, ?, ?, ?)', 
-                   (nom, nbRaquette, nbTache, option))
+    cursor.execute('INSERT INTO experience (nom, nombreTache, option, Tmoy) VALUES (?, ?, ?, ?)', 
+                   (nom, nbTache, option, Tmoy))
     conn.commit()
     id = cursor.lastrowid
     conn.close()
     print("[DATABASE] Nouvelle Experience #", id)
     return id
 
-def update(id, nom, nbRaquette, nbTache, option):
+def update(id, nom, nbTache, option, Tmoy):
     """
     Met à jour un enregistrement de la table experience selon l'identifiant spécifié.
     
     Args:
         id (int): L'identifiant de l'enregistrement à mettre à jour.
         nom (str): Le nom de l'expérience.
-        nbRaquette (int): Le nombre de raquettes utilisées.
         nbTache (int): Le nombre de tâches effectuées.
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('UPDATE experience SET nom = ?, nombreRaquette = ?, nombreTache = ?, option = ? WHERE idExperience = ?', 
-                   (nom, nbRaquette, nbTache, option, id))
+    cursor.execute('UPDATE experience SET nom = ?, nombreTache = ?, option = ?, Tmoy = ? WHERE idExperience = ?', 
+                   (nom, nbTache, option, Tmoy, id))
     conn.commit()
     conn.close()
     print("[DATABASE] Experience #", id, " mise à jour")

@@ -9,15 +9,18 @@ import CustomModal from "../components/CustomModal";
 import { useHandleActions } from "../components/useHandleActions";
 import { createExperience, deleteExperience, getExperiences } from "../utils/experienceApi";
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
+
+  const navigate = useNavigate();
 
   const actions = useHandleActions({
     id: "",
     nom: "",
-    nombreRaquette: 0,
-    nombreTache: 0,
-    option: ""
+    nombreTache: 1,
+    option: "A",
+    Tmoy: 10
   });
 
   useEffect(() => {
@@ -30,6 +33,7 @@ const Home = () => {
       }
     };
     fetchExperiences();
+    // eslint-disable-next-line
   }, []);
 
   const handleSave = async () => {
@@ -56,9 +60,6 @@ const Home = () => {
   const columns = [
     { field: "id", headerName: "ID d'expérience", width: 150 },
     { field: "nom", headerName: "Nom", width: 150 },
-    { field: "nombreRaquette", headerName: "Nombre de raquettes", width: 200 },
-    { field: "nombreTache", headerName: "Nombre de tâches", width: 150 },
-    { field: "option", headerName: "Options", width: 150 },
     {
       field: "actions",
       headerName: "Actions",
@@ -69,7 +70,7 @@ const Home = () => {
             variant="outlined"
             color="primary"
             size="small"
-            onClick={() => { }}
+            onClick={() => navigate(`/experience/${params.row.id}`)}
             style={{ marginRight: 8 }}
           >
             Gérer
@@ -97,44 +98,6 @@ const Home = () => {
         actions.setCurrentRow({
           ...actions.currentRow,
           nom: e.target.value,
-        })
-      }
-    />,
-    <TextField
-      id="nombreRaquette"
-      label="Nombre de raquettes"
-      type="number"
-      fullWidth
-      value={actions.currentRow.nombreRaquette}
-      onChange={(e) =>
-        actions.setCurrentRow({
-          ...actions.currentRow,
-          nombreRaquette: parseInt(e.target.value),
-        })
-      }
-    />,
-    <TextField
-      id="nombreTache"
-      label="Nombre de tâches"
-      type="number"
-      fullWidth
-      value={actions.currentRow.nombreTache}
-      onChange={(e) =>
-        actions.setCurrentRow({
-          ...actions.currentRow,
-          nombreTache: parseInt(e.target.value),
-        })
-      }
-    />,
-    <TextField
-      id="option"
-      label="Options"
-      fullWidth
-      value={actions.currentRow.option}
-      onChange={(e) =>
-        actions.setCurrentRow({
-          ...actions.currentRow,
-          option: e.target.value,
         })
       }
     />,

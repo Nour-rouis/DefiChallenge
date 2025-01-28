@@ -1,4 +1,5 @@
 import os
+import random
 from flask import Flask, jsonify, request, send_file
 from flask_cors import CORS
 from connexion import get_db_connection
@@ -25,12 +26,10 @@ def experiences():
         experiences = expDao.get_all()
         return jsonify(experiences)
 
-def valid_experience(nom, nbRaquette, nbTache, option):
+def valid_experience(nom, nbTache):
     error = None
     if not isinstance(nom, str):
         error = "[ERROR] Nom incorrect"
-    if not nbRaquette.isdigit():
-        error = "[ERROR] Nombre de raquette incorrect"
     if not nbTache.isdigit():
         error = "[ERROR] Nombre de tache incorrect"
     
@@ -43,10 +42,10 @@ def valid_experience(nom, nbRaquette, nbTache, option):
 def experiencenew():
     if request.method == "POST":
         nom = request.form["nom"]
-        nbRaquette = request.form["nombreRaquette"]
         nbTache = request.form["nombreTache"]
         option = request.form["option"]
-        id = expDao.create(nom, nbRaquette, nbTache, option)
+        Tmoy = request.form["Tmoy"]
+        id = expDao.create(nom, nbTache, option, Tmoy)
         return jsonify(
             {
                 'state' : 'success',
@@ -86,14 +85,14 @@ def experience(idexp):
 def experienceupdate(idexp):
     if request.method == "POST":
         nom = request.form["nom"]
-        nbRaquette = request.form["nbRaquette"]
-        nbTache = request.form["nbTache"]
+        nbTache = request.form["nombreTache"]
         option = request.form["option"]
+        Tmoy = request.form["Tmoy"]
 
-        validation = valid_experience(nom, nbRaquette, nbTache)
+        validation = valid_experience(nom, nbTache)
 
         if validation['valid']:
-            expDao.update(idexp, nom, nbRaquette, nbTache, option)
+            expDao.update(idexp, nom, nbTache, option, Tmoy)
             return jsonify(
                 {
                     'state' : 'success',
@@ -273,7 +272,7 @@ def countErrorRaquettes(idexp):
 @app.route("/experience/<int:idexp>/operator/<int:idop>/tache/new", methods=['POST'])
 def newTache(idexp, idop):
     if request.method == "POST":
-        iaPourcentage = request.form['iaPourcentage']
+        iaPourcentage = request.form['iaNbErreurDetecte']
         visibiliteKpi = request.form['visibiliteKpi']
 
         id = tacheDao.create(iaPourcentage, visibiliteKpi, idop)
@@ -308,3 +307,67 @@ def raquettesErreur(idexp, iderr):
     if request.method == "GET":
         image = errDao.get_by_id(iderr)['image']
         return send_file(image, as_attachment=False)
+
+@app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/getErreurAffiche", methods=['GET'])
+def getErreurAffiche(idexp, idop, idtache):
+    if request.method == "GET":
+        erreurs = raqDao.get_raquette_with_error(idexp)
+        idErreurs = []
+        for erreur in erreurs:
+            idErreurs.append(erreur['idErreur'])
+
+        iaNbErreur = tacheDao.get_by_id(idtache)['iaNbErreurDetecte']
+        random.seed(iaNbErreur)
+        errAffiche = random.sample(idErreurs, iaNbErreur)
+        return jsonify(errAffiche)
+
+# --- KPIS --- #
+
+@app.route('/experience/<int:idexp>/getkpi1', methods=['GET'])
+def getKpi1(idexp):
+    if request.method == "GET":
+        exp = expDao.get_by_id(idexp)
+        Tmoy = exp['Tmoy']
+        option = exp['option']
+
+        #Récupération des erreurs pour T_values
+        errors = errDao.get_by_idExperience(idexp)
+        T_values = {}
+        for error in errors:
+            T_values[error['id']] = error['tempsDefaut']
+
+        #Récupération des opérateurs pour XP_VALUES
+        ops = opDao.get_by_idExperience(idexp)
+        Xp_values = {}
+        for op in ops:
+            Xp_values[op['id']] = op['nivExp']
+
+        try:
+            if option == 'A':
+                Tc = Tmoy
+            elif option == 'B':
+                Tc = Tmoy * (30 / 24)
+            elif option == 'C':
+                Tc = Tmoy + sum(T_values.values())
+            elif option == 'D':
+                Tc = (Tmoy) * Xp_values
+            elif option == 'E':
+                Tc = (Tmoy * (30 / 24)) * Xp_values
+            elif option == 'F':
+                Tc = (Tmoy + sum(T_values.values())) * Xp_values
+            else:
+                return jsonify({
+                    'state' : 'error',
+                    'message' : '[ERROR] Option invalide.'
+                }), 400
+
+            # KPI1 -> Temps cible
+            kpi1 = Tc
+            return jsonify({
+                'kpi1' : kpi1
+            }), 200
+        except Exception as e:
+            return jsonify({
+                'state' : 'error',
+                'message' : str(e)
+            }), 500
