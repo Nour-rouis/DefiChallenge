@@ -1,25 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Slider from '@mui/material/Slider';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Button from '@mui/material/Button';
+import { getNbRaquetteErreur } from '../utils/RaquetteApi';
 
-const marks = [
-  {
-    value: 0,
-    label: '0%',
-  },
-  {
-    value: 87,
-    label: '87%',
-  },
-  {
-    value: 100,
-    label: '100%',
-  },
-];
+// const marks = [
+//   {
+//     value: 0,
+//     label: '0%',
+//   },
+//   {
+//     value: 87,
+//     label: '87%',
+//   },
+//   {
+//     value: 100,
+//     label: '100%',
+//   },
+// ];
 
 function valuetext(value) {
   return `${value}%`;
@@ -40,14 +41,33 @@ const KPIs = [
 ];
 
 export default function ConfigTache() {
-  const [KPINom, setKPINom] = React.useState([]);
-
+  const [KPINom, setKPINom] = useState([]);
+  const [nbRaqErreur, setRaqErreur] = useState(0);
+  
   const handleCheckboxChange = (event) => {
     const { value, checked } = event.target;
     setKPINom((prev) =>
       checked ? [...prev, value] : prev.filter((kpi) => kpi !== value)
     );
   }; // todoo : acheter des capotes xxs
+
+  const handleGetNbRaquetteErreur = async () => {
+    try {
+      const data = await getNbRaquetteErreur(1);
+      setRaqErreur(data.count);
+    } catch (error) {
+      console.error('Erreur lors de la récupération du nombre de raquette erreur:', error);
+    }
+  }
+
+  handleGetNbRaquetteErreur();
+  const marks = []
+  for (let i = 0; i <= nbRaqErreur; i++) {
+    marks.push({
+      value: i,
+      label: `${i}`,
+    });
+  }
 
   const columns = 2; // Number of columns
   const columnWidth = 50 / columns; // Width of each column in percentage
@@ -62,16 +82,17 @@ export default function ConfigTache() {
         Task #X
       </Typography>
       <Typography variant="subtitle1" gutterBottom>
-        Niveau de confiance d'IA : 
+        Erreurs à afficher par l'IA : 
       </Typography>
       <Box sx={{ width: 300, margin: '0 auto' }}>
         <Slider
           aria-label="Restricted values"
-          defaultValue={20}
+          defaultValue={0}
           getAriaValueText={valuetext}
           step={null}
           valueLabelDisplay="auto"
           marks={marks}
+          max={nbRaqErreur}
         />
       </Box>
       <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', marginTop: 2 }}>
