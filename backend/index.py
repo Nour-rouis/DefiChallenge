@@ -308,7 +308,7 @@ def raquettesErreur(idexp, iderr):
         image = errDao.get_by_id(iderr)['image']
         return send_file(image, as_attachment=False)
 
-@app.route("experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/getErreurAffiche", methods=['GET'])
+@app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/getErreurAffiche", methods=['GET'])
 def getErreurAffiche(idexp, idop, idtache):
     if request.method == "GET":
         erreurs = errDao.get_by_idExperience(idexp)
@@ -318,7 +318,7 @@ def getErreurAffiche(idexp, idop, idtache):
 
         iaNbErreur = tacheDao.get_by_id(idtache)['iaNbErreurDetecte']
         random.seed(iaNbErreur)
-        errAffiche = random.sample(erreurs, iaNbErreur)
+        errAffiche = random.sample(idErreurs, iaNbErreur)
         return jsonify(errAffiche)
 
 # --- KPIS --- #
