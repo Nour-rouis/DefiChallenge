@@ -1,4 +1,5 @@
 import os
+import random
 from flask import Flask, jsonify, request, send_file
 from flask_cors import CORS
 from connexion import get_db_connection
@@ -271,7 +272,7 @@ def countErrorRaquettes(idexp):
 @app.route("/experience/<int:idexp>/operator/<int:idop>/tache/new", methods=['POST'])
 def newTache(idexp, idop):
     if request.method == "POST":
-        iaPourcentage = request.form['iaPourcentage']
+        iaPourcentage = request.form['iaNbErreurDetecte']
         visibiliteKpi = request.form['visibiliteKpi']
 
         id = tacheDao.create(iaPourcentage, visibiliteKpi, idop)
@@ -307,9 +308,22 @@ def raquettesErreur(idexp, iderr):
         image = errDao.get_by_id(iderr)['image']
         return send_file(image, as_attachment=False)
 
+@app.route("experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/getErreurAffiche", methods=['GET'])
+def getErreurAffiche(idexp, idop, idtache):
+    if request.method == "GET":
+        erreurs = errDao.get_by_idExperience(idexp)
+        idErreurs = []
+        for erreur in erreurs:
+            idErreurs.append(erreur['idErreur'])
+
+        iaNbErreur = tacheDao.get_by_id(idtache)['iaNbErreurDetecte']
+        random.seed(iaNbErreur)
+        errAffiche = random.sample(erreurs, iaNbErreur)
+        return jsonify(errAffiche)
+
 # --- KPIS --- #
 
-@app.route('/experience/<int:idexp>/', methods=['GET'])
+@app.route('/experience/<int:idexp>/getkpi1', methods=['GET'])
 def getKpi1(idexp):
     if request.method == "GET":
         exp = expDao.get_by_id(idexp)

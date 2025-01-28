@@ -15,7 +15,7 @@ def get_all():
     taches = []
     for row in rows:
         taches.append({"idTache": row[0], 
-                       "iaPourcentage": row[1],
+                       "iaNbErreurDetecte": row[1],
                        "visibiliteKpi": row[2], 
                        "idOperateur": row[3]})
     return taches
@@ -37,11 +37,11 @@ def get_by_id(id):
     row = cursor.fetchone()
     conn.close()
     return {"idTache": row[0], 
-            "iaPourcentage": row[1], 
+            "iaNbErreurDetecte": row[1], 
             "visibiliteKpi": row[2],
             "idOperateur": row[3]}
 
-def create(iaPourcentage, visibiliteKpi, idOperateur):
+def create(iaNbErreurDetecte, visibiliteKpi, idOperateur):
     """
     Crée un nouvel enregistrement dans la table tache.
     
@@ -54,15 +54,15 @@ def create(iaPourcentage, visibiliteKpi, idOperateur):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO tache (iaPourcentage, visibiliteKpi, idOperateur) VALUES (?, ?, ?)', 
-                   (iaPourcentage, visibiliteKpi, idOperateur))
+    cursor.execute('INSERT INTO tache (iaNbErreurDetecte, visibiliteKpi, idOperateur) VALUES (?, ?, ?)', 
+                   (iaNbErreurDetecte, visibiliteKpi, idOperateur))
     conn.commit()
     id = cursor.lastrowid
     conn.close()
     print("[DATABASE] Nouvelle Tache #", id)
     return id
 
-def update(id, iaPourcentage, visibiliteKpi, idOperateur):
+def update(id, iaNbErreurDetecte, visibiliteKpi, idOperateur):
     """
     Met à jour un enregistrement de la table tache selon l'identifiant spécifié.
     
@@ -76,8 +76,8 @@ def update(id, iaPourcentage, visibiliteKpi, idOperateur):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('UPDATE tache SET iaPourcentage = ?, visibiliteKpi = ?, idOperateur = ? WHERE idTache = ?', 
-                   (iaPourcentage, visibiliteKpi, idOperateur, id))
+    cursor.execute('UPDATE tache SET iaNbErreurDetecte = ?, visibiliteKpi = ?, idOperateur = ? WHERE idTache = ?', 
+                   (iaNbErreurDetecte, visibiliteKpi, idOperateur, id))
     conn.commit()
     conn.close()
     return True
@@ -119,7 +119,7 @@ def get_by_idOperateur(idOperateur):
     taches = []
     for row in rows:
         taches.append({"idTache": row[0], 
-                       "iaPourcentage": row[1], 
+                       "iaNbErreurDetecte": row[1], 
                        "visibiliteKpi": row[2],
                        "idOperateur": row[3]})
     return taches
@@ -143,7 +143,7 @@ def get_by_idExperience(idExperience):
     taches = []
     for row in rows:
         taches.append({"idTache": row[0], 
-                       "iaPourcentage": row[1],
+                       "iaNbErreurDetecte": row[1],
                        "visibiliteKpi": row[2],
                        "idOperateur": row[3]})
     return taches
