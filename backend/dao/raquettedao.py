@@ -133,7 +133,33 @@ def count_errors_by_idExperience(idExperience):
 
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('SELECT COUNT(*) as COUNT FROM raquette WHERE idErreur')
+    cursor.execute('SELECT COUNT(*) as COUNT FROM raquette WHERE idErreur IS NOT NULL AND idExperience = ?',
+                   (idExperience,))
     row = cursor.fetchone()
     conn.close()
     return {"count" : row[0]}
+
+def get_raquette_with_error(idExperience):
+    """
+    Récupère les raquettes avec erreur d'une expérience spécifiée.
+
+    Args:
+        idExperience (int): L'identifiant de l'expérience des erreurs à récupérer.
+
+    Returns:
+        dict: Les raquettes avec erreur de l'expérience.
+    """
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM raquette WHERE idErreur IS NOT NULL AND idExperience = ?', 
+                   (idExperience,))
+    rows = cursor.fetchall()
+    conn.close()
+    raquettes = []
+    for row in rows:
+        raquettes.append({"idRaquette": row[0], 
+                          "nomRaquette": row[1],
+                          "idErreur": row[2], 
+                          "idExperience": row[3]})
+    return raquettes

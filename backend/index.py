@@ -311,7 +311,7 @@ def raquettesErreur(idexp, iderr):
 @app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/getErreurAffiche", methods=['GET'])
 def getErreurAffiche(idexp, idop, idtache):
     if request.method == "GET":
-        erreurs = errDao.get_by_idExperience(idexp)
+        erreurs = raqDao.get_raquette_with_error(idexp)
         idErreurs = []
         for erreur in erreurs:
             idErreurs.append(erreur['idErreur'])
@@ -363,6 +363,9 @@ def getKpi1(idexp):
 
             # KPI1 -> Temps cible
             kpi1 = Tc
+            return jsonify({
+                'kpi1' : kpi1
+            }), 200
         except Exception as e:
             return jsonify({
                 'state' : 'error',
