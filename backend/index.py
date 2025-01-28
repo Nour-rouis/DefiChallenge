@@ -267,7 +267,7 @@ def deleteraquette(idexp, idraq):
     
 # --- PAGE CONFIG TACHE --- #
 
-@app.route('/experience/<int:idexp>/raquettes/counterrors', methods=['GET'])
+@app.route('/experience/<int:idexp>/raquettes/nberreurs', methods=['GET'])
 def countErrorRaquettes(idexp):
     if request.method == "GET":
         count = raqDao.count_errors_by_idExperience(idexp)
@@ -307,7 +307,7 @@ def raquettesRestantes(idexp, idop, idtache):
         return jsonify(raquettes)
     
 @app.route("/experience/<int:idexp>/erreur/<int:iderr>/image", methods=['GET'])
-def raquettesErreur(idexp, iderr):
+def erreurImage(idexp, iderr):
     if request.method == "GET":
         image = errDao.get_by_id(iderr)['image']
         return send_file(image, as_attachment=False)

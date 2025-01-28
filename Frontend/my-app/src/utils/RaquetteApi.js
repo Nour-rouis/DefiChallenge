@@ -35,6 +35,14 @@ export const deleteRaquette = async (experienceId, raquetteId) => {
   return await response.json();
 }
 
+export const getNbRaquetteErreur = async (experienceId) => {
+  const response = await fetch(`${API_URL}/experience/${experienceId}/raquettes/nberreurs`);
+  if (!response.ok) {
+      throw new Error(`Failed to get nb raquette erreur: ${response.statusText}`);
+  }
+  return await response.json();
+}
+
 export const updateRaquette = async (experienceId, raquetteId, formData) => {
   const response = await fetch(`${API_URL}/experience/${experienceId}/raquette/${raquetteId}/update`, {
     method: 'POST',
