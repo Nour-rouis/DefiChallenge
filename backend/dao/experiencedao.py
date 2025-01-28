@@ -17,7 +17,8 @@ def get_all():
         experiences.append({"idExperience": row[0], 
                             "nom": row[1], 
                             "nombreTache": row[2],
-                            "option": row[3]})
+                            "option": row[3],
+                            "Tmoy" : row[4]})
     return experiences
 
 def get_by_id(id):
@@ -39,9 +40,10 @@ def get_by_id(id):
     return {"idExperience": row[0], 
             "nom": row[1], 
             "nombreTache": row[2],
-            "option": row[3]}
+            "option": row[3],
+            "Tmoy" : row[4]}
 
-def create(nom, nbTache, option):
+def create(nom, nbTache, option, Tmoy):
     """
     Crée un nouvel enregistrement dans la table experience.
     
@@ -54,15 +56,15 @@ def create(nom, nbTache, option):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO experience (nom, nombreTache, option) VALUES (?, ?, ?)', 
-                   (nom, nbTache, option))
+    cursor.execute('INSERT INTO experience (nom, nombreTache, option, Tmoy) VALUES (?, ?, ?, ?)', 
+                   (nom, nbTache, option, Tmoy))
     conn.commit()
     id = cursor.lastrowid
     conn.close()
     print("[DATABASE] Nouvelle Experience #", id)
     return id
 
-def update(id, nom, nbTache, option):
+def update(id, nom, nbTache, option, Tmoy):
     """
     Met à jour un enregistrement de la table experience selon l'identifiant spécifié.
     
@@ -73,8 +75,8 @@ def update(id, nom, nbTache, option):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('UPDATE experience SET nom = ?, nombreTache = ?, option = ? WHERE idExperience = ?', 
-                   (nom, nbTache, option, id))
+    cursor.execute('UPDATE experience SET nom = ?, nombreTache = ?, option = ?, Tmoy = ? WHERE idExperience = ?', 
+                   (nom, nbTache, option, Tmoy, id))
     conn.commit()
     conn.close()
     print("[DATABASE] Experience #", id, " mise à jour")
