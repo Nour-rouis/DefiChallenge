@@ -43,7 +43,8 @@ def experiencenew():
         nom = request.form["nom"]
         nbTache = request.form["nombreTache"]
         option = request.form["option"]
-        id = expDao.create(nom, nbTache, option)
+        Tmoy = request.form["Tmoy"]
+        id = expDao.create(nom, nbTache, option, Tmoy)
         return jsonify(
             {
                 'state' : 'success',
@@ -85,11 +86,12 @@ def experienceupdate(idexp):
         nom = request.form["nom"]
         nbTache = request.form["nombreTache"]
         option = request.form["option"]
+        Tmoy = request.form["Tmoy"]
 
         validation = valid_experience(nom, nbTache)
 
         if validation['valid']:
-            expDao.update(idexp, nom, nbTache, option)
+            expDao.update(idexp, nom, nbTache, option, Tmoy)
             return jsonify(
                 {
                     'state' : 'success',
@@ -304,3 +306,4 @@ def raquettesErreur(idexp, iderr):
     if request.method == "GET":
         image = errDao.get_by_id(iderr)['image']
         return send_file(image, as_attachment=False)
+

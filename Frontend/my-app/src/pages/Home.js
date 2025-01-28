@@ -19,7 +19,8 @@ const Home = () => {
     id: "",
     nom: "",
     nombreTache: 1,
-    option: "A"
+    option: "A",
+    Tmoy: 10
   });
 
   useEffect(() => {
