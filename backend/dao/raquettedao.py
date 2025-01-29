@@ -53,7 +53,7 @@ def create(nomRaquette, idErreur, idExperience):
     Returns:
         int: L'identifiant de l'enregistrement créé.
     """
-    conn = get_db_connection()
+    conn = get_db_connection(False)
     cursor = conn.cursor()
     cursor.execute('INSERT INTO raquette (nomRaquette, idErreur, idExperience) VALUES (?, ?, ?)', 
                    (nomRaquette, idErreur, idExperience))

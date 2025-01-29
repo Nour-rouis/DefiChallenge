@@ -337,22 +337,27 @@ def getErreurAffiche(idexp, idop, idtache):
 @app.route('/experience/<int:idexp>/getkpi1', methods=['GET'])
 def getKpi1(idexp):
     if request.method == "GET":
+        # Fetch experience data
         exp = expDao.get_by_id(idexp)
+        if not exp:
+            return jsonify({'state': 'error', 'message': 'Experience not found'}), 404
+
         Tmoy = exp['Tmoy']
         option = exp['option']
 
-        #Récupération des erreurs pour T_values
+        # Fetch error data for T_values
         errors = errDao.get_by_idExperience(idexp)
         T_values = {}
         for error in errors:
             T_values[error['id']] = error['tempsDefaut']
 
-        #Récupération des opérateurs pour XP_VALUES
+        # Fetch operator data for Xp_values
         ops = opDao.get_by_idExperience(idexp)
         Xp_values = {}
         for op in ops:
-            Xp_values[op['id']] = op['nivExp']
+            Xp_values[op['id']] = int(op['nivExp'])  # Ensure that 'nivExp' is treated as an integer
 
+        # Calculate Tc based on the option
         try:
             if option == 'A':
                 Tc = Tmoy
@@ -361,24 +366,18 @@ def getKpi1(idexp):
             elif option == 'C':
                 Tc = Tmoy + sum(T_values.values())
             elif option == 'D':
-                Tc = (Tmoy) * Xp_values
+                Tc = Tmoy * sum(Xp_values.values())  # Sum of the operator levels
             elif option == 'E':
-                Tc = (Tmoy * (30 / 24)) * Xp_values
+                Tc = (Tmoy * (30 / 24)) * sum(Xp_values.values())  # Multiply by sum of operator levels
             elif option == 'F':
-                Tc = (Tmoy + sum(T_values.values())) * Xp_values
+                Tc = (Tmoy + sum(T_values.values())) * sum(Xp_values.values())  # Add T_values sum and multiply by operator levels
             else:
-                return jsonify({
-                    'state' : 'error',
-                    'message' : '[ERROR] Option invalide.'
-                }), 400
+                return jsonify({'state': 'error', 'message': '[ERROR] Option invalide.'}), 400
 
             # KPI1 -> Temps cible
             kpi1 = Tc
-            return jsonify({
-                'kpi1' : kpi1
-            }), 200
+            return jsonify({'kpi1': kpi1}), 200
+
         except Exception as e:
-            return jsonify({
-                'state' : 'error',
-                'message' : str(e)
-            }), 500
+            return jsonify({'state': 'error', 'message': str(e)}), 500
+
