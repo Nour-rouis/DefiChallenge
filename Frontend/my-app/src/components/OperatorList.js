@@ -13,14 +13,14 @@ import { useParams } from "react-router-dom";
 import { useEffect } from "react";
 
 const OperatorList = () => {
-  const { id } = useParams();
+  const { idexp } = useParams();
 
   const actions = useHandleActions({ id: "", nom: "", prenom: "", nivExp: 50 }, "P");
 
   useEffect(() => {
     const fetchOperators = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/experience/${id}/operators`);
+        const response = await fetch(`http://localhost:5000/experience/${idexp}/operators`);
         const data = await response.json();
         actions.setRows(data.map(operator => ({
           ...operator,
@@ -39,7 +39,7 @@ const OperatorList = () => {
 
   const handleDelete = async (operatorId) => {
     try {
-      const response = await fetch(`http://localhost:5000/experience/${id}/operator/${operatorId}/delete`, {
+      const response = await fetch(`http://localhost:5000/experience/${idexp}/operator/${operatorId}/delete`, {
         method: 'GET'
       });
 
