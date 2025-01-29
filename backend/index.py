@@ -285,6 +285,12 @@ def newTache(idexp, idop):
             'id' : id,
             'message' : '[SUCCESS] Tache #' + str(id) + ' créée pour l\'opérateur #' + str(idop) + ' dans l\'Experience #' + str(idexp) + '.' 
         })
+    
+@app.route("/experience/<int:idexp>/operator/<int:idop>/nbtaches", methods=['GET'])
+def countTaches(idexp, idop):
+    if request.method == "GET":
+        count = tacheDao.count_by_idOperateur(idop)
+        return jsonify(count)
 
 # --- PAGE VERIFICATION --- #
 
