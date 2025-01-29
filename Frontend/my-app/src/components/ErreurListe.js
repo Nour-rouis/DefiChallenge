@@ -14,12 +14,12 @@ const ErreurListe = () => {
     const [isEditing, setIsEditing] = useState(false);
 
 
-    const { id } = useParams();
+    const { idexp } = useParams();
     const navigate = useNavigate();
 
     useEffect(() => {
         fetchErreurs();
-    }, [id]);
+    }, [idexp]);
 
     const validateTempsFormat = (temps) => {
         const regex = /^(\d+):([0-5][0-9])$/;
@@ -28,7 +28,7 @@ const ErreurListe = () => {
 
     const fetchErreurs = async () => {
         try {
-            const data = await getErreurs(id);
+            const data = await getErreurs(idexp);
             setErreurs(data);
         } catch (error) {
             console.error('Erreur lors du chargement des erreurs:', error);
@@ -49,9 +49,9 @@ const ErreurListe = () => {
     const handleSave = async () => {
         try {
             if (isEditing) {
-                await updateErreur(id, currentErreur.id, currentErreur);
+                await updateErreur(idexp, currentErreur.id, currentErreur);
             } else {
-                await createErreur(id, currentErreur);
+                await createErreur(idexp, currentErreur);
             }
             fetchErreurs();
             setOpenDialog(false);
@@ -64,7 +64,7 @@ const ErreurListe = () => {
 
     const handleDelete = async (erreurId) => {
         try {
-            await deleteErreur(id, erreurId);
+            await deleteErreur(idexp, erreurId);
             fetchErreurs();
         } catch (error) {
             console.error('Erreur lors de la suppression:', error);

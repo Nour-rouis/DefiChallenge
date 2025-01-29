@@ -32,10 +32,10 @@ const OperatorList = () => {
       }
     };
 
-    if (id) {
+    if (idexp) {
       fetchOperators();
     }
-  }, [id]);
+  }, [idexp]);
 
   const handleDelete = async (operatorId) => {
     try {
