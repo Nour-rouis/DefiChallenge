@@ -68,7 +68,7 @@ function GestionExperience() {
             const data = await response.json();
 
             if (data.state === 'success') {
-                navigate(`/experience/${idexp}/tache/${data.operatorId}`);
+                navigate(`/experience/${idexp}/tache/${data.id}`);
             }
         } catch (error) {
             console.error('Erreur lors de la création de l\'opérateur:', error);

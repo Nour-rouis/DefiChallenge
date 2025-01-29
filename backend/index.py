@@ -205,6 +205,7 @@ def newoperator(idexp):
         return jsonify(
             {
                 'state' : 'success',
+                'id' : id,
                 'message' : '[SUCCESS] Opérateur #' + str(id) + ' créée pour l\'Experience #' + str(idexp) + '.'
             }
         )
@@ -243,14 +244,10 @@ def newraquettes(idexp):
 @app.route("/experience/<int:idexp>/raquette/<int:idraq>/update", methods=['POST'])
 def updateraquette(idexp, idraq):
     if request.method == "POST":
-        print('A')
         nomRaquette = request.form['nomRaquette']
-        print('B')
         idErreur = request.form['idErreur']
-        print('C')
 
         raqDao.update(idraq, nomRaquette, idErreur, idexp)
-        print('D')
         return jsonify({
             'state' : 'success',
             'message' : '[SUCCESS] Raquette #' + str(idraq) + ' a été mise à jour dans l\'Expérience #' + str(idexp) + '.'

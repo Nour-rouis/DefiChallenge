@@ -73,7 +73,10 @@ def update(idRaquette, nomRaquette, idErreur, idExperience):
         nomErreur (str): Le nom de l'erreur de la raquette.
         imageErreur (str): Le chemin de l'image de l'erreur de la raquette.
     """
-    conn = get_db_connection()
+    if idErreur == "0":
+        conn = get_db_connection(False)
+    else:
+        conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute('UPDATE raquette SET nomRaquette = ?, idErreur = ?, idExperience = ? WHERE idRaquette = ?', 
                    (nomRaquette, idErreur, idExperience, idRaquette))
