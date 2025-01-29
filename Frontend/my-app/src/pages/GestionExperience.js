@@ -61,14 +61,14 @@ function GestionExperience() {
             formData.append('prenom', newOperator.prenom);
             formData.append('nivExp', newOperator.nivExp);
 
-            const response = await fetch(`http://localhost:5000/experience/${id}/operator/new`, {
+            const response = await fetch(`http://localhost:5000/experience/${idexp}/operator/new`, {
                 method: 'POST',
                 body: formData
             });
             const data = await response.json();
 
             if (data.state === 'success') {
-                navigate(`/experience/${id}/tache/${data.operatorId}`);
+                navigate(`/experience/${idexp}/tache/${data.operatorId}`);
             }
         } catch (error) {
             console.error('Erreur lors de la création de l\'opérateur:', error);

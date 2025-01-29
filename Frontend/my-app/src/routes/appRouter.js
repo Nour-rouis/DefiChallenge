@@ -21,8 +21,8 @@ const AppRouter = () => {
           <Route path="raquettes" element={<RaquetteListe />} />
           <Route path="raquettes/erreurs" element={<ErreurListe />} />
           <Route path="operateur/:idop">
+            <Route path="configtache" element={<ConfigTache />} />
             <Route path="tache/:idtac">
-              <Route path="config" element={<ConfigTache />} />
               <Route path="analyse" element={<KpiPage />} />
             </Route>
           </Route>
