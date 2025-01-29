@@ -45,6 +45,7 @@ const KPIs = [
 export default function ConfigTache() {
   const [KPINom, setKPINom] = useState([]);
   const [nbRaqErreur, setRaqErreur] = useState(0);
+  const { idexp, idop } = useParams();
   
   const handleCheckboxChange = (event) => {
     const { value, checked } = event.target;
@@ -86,13 +87,9 @@ export default function ConfigTache() {
     kpiChunks.push(KPIs.slice(i, i + Math.ceil(KPIs.length / columns)));
   }
 
-  let temp = useParams();
-
   const clickButton = () => {
     let kpiAff = KPINom.keys();
     let value = parseInt(valuetext);
-
-    console.log(temp);
   }
 
   return (

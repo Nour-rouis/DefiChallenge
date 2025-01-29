@@ -30,17 +30,17 @@ const RaquetteListe = () => {
   const [error, setError] = useState(null);
 
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { idexp } = useParams();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         // Récupérer les raquettes
-        const raquettesData = await getRaquettes(id);
+        const raquettesData = await getRaquettes(idexp);
 
         // Récupérer les erreurs
-        const response = await fetch(`http://localhost:5000/experience/${id}/erreurs`);
+        const response = await fetch(`http://localhost:5000/experience/${idexp}/erreurs`);
         const erreursData = await response.json();
         setErreurs(erreursData);
 
@@ -64,7 +64,7 @@ const RaquetteListe = () => {
     };
 
     fetchData();
-  }, [id]);
+  }, [idexp]);
 
   const handleUpdate = async () => {
     try {
@@ -74,7 +74,7 @@ const RaquetteListe = () => {
       if (nombreRaquettes < raquettes.length) {
         const raquettesToDelete = raquettes.slice(nombreRaquettes);
         for (const raquette of raquettesToDelete) {
-          await deleteRaquette(id, raquette.idRaquette);
+          await deleteRaquette(idexp, raquette.idRaquette);
         }
       }
       // Si le nouveau nombre est supérieur, créer de nouvelles raquettes
@@ -88,12 +88,12 @@ const RaquetteListe = () => {
         );
 
         for (const raquette of newRaquettes) {
-          await createRaquette(raquette, id);
+          await createRaquette(raquette, idexp);
         }
       }
 
       // Rafraîchir la liste des raquettes
-      const updatedRaquettes = await getRaquettes(id);
+      const updatedRaquettes = await getRaquettes(idexp);
       setRaquettes(updatedRaquettes);
 
     } catch (error) {
@@ -136,10 +136,10 @@ const RaquetteListe = () => {
       formData.append('nomRaquette', selectedRaquette.nomRaquette);
       formData.append('idErreur', selectedRaquette.idErreur || '0');
 
-      await updateRaquette(id, selectedRaquette.idRaquette, formData);
+      await updateRaquette(idexp, selectedRaquette.idRaquette, formData);
 
       // Rafraîchir la liste des raquettes avec les noms d'erreurs
-      const updatedRaquettes = await getRaquettes(id);
+      const updatedRaquettes = await getRaquettes(idexp);
       const updatedRaquettesWithErrors = updatedRaquettes.map(raquette => {
         const erreur = erreurs.find(err => err.idErreur === raquette.idErreur);
         return {

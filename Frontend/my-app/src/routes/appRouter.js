@@ -15,13 +15,18 @@ const AppRouter = () => {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/users" element={<Users />} />
-        <Route path="/kpi" element={<KpiPage />} />
-        <Route path="/experience/:id">
+        <Route path="/kpi" element={<KpiPage />} /> {/* A supprimer */}
+        <Route path="/experience/:idexp">
           <Route index element={<GestionExperience />} />
           <Route path="raquettes" element={<RaquetteListe />} />
           <Route path="raquettes/erreurs" element={<ErreurListe />} />
+          <Route path="operateur/:idop">
+            <Route path="tache/:idtac">
+              <Route path="config" element={<ConfigTache />} />
+              <Route path="analyse" element={<KpiPage />} />
+            </Route>
+          </Route>
         </Route>
-        <Route path="/config" element={<ConfigTache />} />
       </Routes>
     </Router>
   );

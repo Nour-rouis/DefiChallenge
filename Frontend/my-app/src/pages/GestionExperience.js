@@ -24,7 +24,7 @@ import CustomModal from '../components/CustomModal';
 import { getRaquettes } from '../utils/RaquetteApi';
 
 function GestionExperience() {
-    const { id } = useParams();
+    const { idexp } = useParams();
 
     const navigate = useNavigate();
 
@@ -94,12 +94,12 @@ function GestionExperience() {
         const fetchExperience = async () => {
             try {
                 setLoading(true);
-                const data = await getExperience(id);
+                const data = await getExperience(idexp);
                 console.log(data)
                 setExperience(data);
                 setNbTache(data.nombreTache);
                 setTmoy(data.Tmoy);  // Ajoutez cette ligne
-                const raquettes = await getRaquettes(id);
+                const raquettes = await getRaquettes(idexp);
                 setRaquettesLength(raquettes.length);
                 setError(null);
             } catch (err) {
@@ -110,10 +110,10 @@ function GestionExperience() {
             }
         };
 
-        if (id) {
+        if (idexp) {
             fetchExperience();
         }
-    }, [id]);
+    }, [idexp]);
 
     const textFields = [experience ? <TextField
         id="nombre"
