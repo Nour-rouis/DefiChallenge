@@ -13,6 +13,9 @@ import {
     Divider,
     TextField,
     Snackbar,
+    InputLabel,
+    Select,
+    MenuItem,
 } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getExperience, updateExperience } from '../utils/experienceApi';
@@ -36,6 +39,41 @@ function GestionExperience() {
     const [raquettesLength, setRaquettesLength] = useState(0);
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [tmoyError, setTmoyError] = useState(false);
+    const [openOperatorModal, setOpenOperatorModal] = useState(false);
+    const [newOperator, setNewOperator] = useState({
+        nom: '',
+        prenom: '',
+        nivExp: '50'
+    });
+
+    const handleStartSequence = () => {
+        setOpenOperatorModal(true);
+    };
+
+    const handleCloseOperatorModal = () => {
+        setOpenOperatorModal(false);
+    };
+
+    const handleSaveOperator = async () => {
+        try {
+            const formData = new FormData();
+            formData.append('nom', newOperator.nom);
+            formData.append('prenom', newOperator.prenom);
+            formData.append('nivExp', newOperator.nivExp);
+
+            const response = await fetch(`http://localhost:5000/experience/${id}/operator/new`, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+
+            if (data.state === 'success') {
+                navigate(`/experience/${id}/tache/${data.operatorId}`);
+            }
+        } catch (error) {
+            console.error('Erreur lors de la création de l\'opérateur:', error);
+        }
+    };
 
     const validateTempsFormat = (temps) => {
         const regex = /^(\d+):([0-5][0-9])$/;
@@ -215,7 +253,11 @@ function GestionExperience() {
                     Enregistrer les parametres d'experiences
                 </Button>
 
-                <Button variant="contained" color='success'>
+                <Button
+                    variant="contained"
+                    color='success'
+                    onClick={handleStartSequence}
+                >
                     Démarrer la séquence
                 </Button>
             </Grid>
@@ -241,6 +283,41 @@ function GestionExperience() {
                             helperText={tmoyError ? "Format invalide. Utilisez mm:ss (ex: 15:30)" : ""}
                         />
                         : null
+                ]}
+            />
+            <CustomModal
+                isEditing={false}
+                onValid={handleSaveOperator}
+                onClose={handleCloseOperatorModal}
+                open={openOperatorModal}
+                title="Nouvel opérateur"
+                textFields={[
+                    <TextField
+                        id="nom"
+                        label="Nom"
+                        fullWidth
+                        value={newOperator.nom}
+                        onChange={(e) => setNewOperator({ ...newOperator, nom: e.target.value })}
+                    />,
+                    <TextField
+                        id="prenom"
+                        label="Prénom"
+                        fullWidth
+                        value={newOperator.prenom}
+                        onChange={(e) => setNewOperator({ ...newOperator, prenom: e.target.value })}
+                    />,
+                    <FormControl fullWidth>
+                        <InputLabel>Niveau d'expérience</InputLabel>
+                        <Select
+                            value={newOperator.nivExp}
+                            label="Niveau d'expérience"
+                            onChange={(e) => setNewOperator({ ...newOperator, nivExp: e.target.value })}
+                        >
+                            <MenuItem value="50">50%</MenuItem>
+                            <MenuItem value="100">100%</MenuItem>
+                            <MenuItem value="200">200%</MenuItem>
+                        </Select>
+                    </FormControl>
                 ]}
             />
             <Snackbar
