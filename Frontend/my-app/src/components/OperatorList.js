@@ -9,9 +9,49 @@ import {
 import CustomDataGrid from "./CustomDataGrid";
 import CustomModal from "./CustomModal";
 import { useHandleActions } from "./useHandleActions";
+import { useParams } from "react-router-dom";
+import { useEffect } from "react";
 
 const OperatorList = () => {
+  const { id } = useParams();
+
   const actions = useHandleActions({ id: "", nom: "", prenom: "", nivExp: 50 }, "P");
+
+  useEffect(() => {
+    const fetchOperators = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/experience/${id}/operators`);
+        const data = await response.json();
+        actions.setRows(data.map(operator => ({
+          ...operator,
+          id: operator.idOperateur,
+          nivExp: operator.nivExp + '%'
+        })));
+      } catch (error) {
+        console.error("Erreur lors du chargement des opérateurs:", error);
+      }
+    };
+
+    if (id) {
+      fetchOperators();
+    }
+  }, [id]);
+
+  const handleDelete = async (operatorId) => {
+    try {
+      const response = await fetch(`http://localhost:5000/experience/${id}/operator/${operatorId}/delete`, {
+        method: 'GET'
+      });
+
+      if (response.ok) {
+        actions.setRows(prevRows => prevRows.filter(row => row.id !== operatorId));
+      } else {
+        console.error("Erreur lors de la suppression de l'opérateur");
+      }
+    } catch (error) {
+      console.error("Erreur lors de la suppression de l'opérateur:", error);
+    }
+  };
 
   const columns = [
     { field: "id", headerName: "ID d'opérateur", width: 150 },
@@ -26,18 +66,9 @@ const OperatorList = () => {
         <Box>
           <Button
             variant="outlined"
-            color="primary"
-            size="small"
-            onClick={() => actions.handleEdit(params.row)}
-            style={{ marginRight: 8 }}
-          >
-            Modifier
-          </Button>
-          <Button
-            variant="outlined"
             color="error"
             size="small"
-            onClick={() => actions.handleDelete(params.row.id)}
+            onClick={() => handleDelete(params.row.id)}
           >
             Supprimer
           </Button>
@@ -93,9 +124,9 @@ const OperatorList = () => {
 
   return (
     <Grid width="50%">
-      <CustomDataGrid name="Un opérateur" columns={columns} elements={actions.rows} onClickButton={actions.handleOpenDialog} width="100%" allowAdd={false} noRowsLabel="Aucun opérateur n'a fait cette expérience"/>
+      <CustomDataGrid name="Un opérateur" columns={columns} elements={actions.rows} onClickButton={actions.handleOpenDialog} width="100%" allowAdd={false} noRowsLabel="Aucun opérateur n'a fait cette expérience" />
 
-  <CustomModal title="Un opérateur" open={actions.openDialog} onClose={actions.handleCloseDialog} onValid={actions.handleSave} textFields={textFields} isEditing={actions.isEditing} />
+      <CustomModal title="Un opérateur" open={actions.openDialog} onClose={actions.handleCloseDialog} onValid={actions.handleSave} textFields={textFields} isEditing={actions.isEditing} />
     </Grid >
   );
 };
