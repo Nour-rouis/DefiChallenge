@@ -20,8 +20,13 @@ const AppRouter = () => {
           <Route index element={<GestionExperience />} />
           <Route path="raquettes" element={<RaquetteListe />} />
           <Route path="raquettes/erreurs" element={<ErreurListe />} />
+          <Route path="operateur/:idop">
+            <Route path="configtache" element={<ConfigTache />} />
+            <Route path="tache/:idtac">
+              <Route path="analyse" element={<KpiPage />} />
+            </Route>
+          </Route>
         </Route>
-        <Route path="/config" element={<ConfigTache />} />
       </Routes>
     </Router>
   );

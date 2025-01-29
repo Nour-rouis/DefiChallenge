@@ -215,7 +215,7 @@ def deleteoperator(idexp, idope):
         opDao.delete(idope)
         return jsonify({
             'state' : 'success',
-            'message' : '[SUCCESS] Opérateur ' + str(idope) + ' dans l\'Experience #' + idexp + ' a été supprimé.'
+            'message' : '[SUCCESS] Opérateur ' + str(idope) + ' dans l\'Experience #' + str(idexp) + ' a été supprimé.'
         })
     
 # --- PAGE RAQUETTE --- #

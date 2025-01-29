@@ -45,6 +45,7 @@ const KPIs = [
 export default function ConfigTache() {
   const [KPINom, setKPINom] = useState([]);
   const [nbRaqErreur, setRaqErreur] = useState(0);
+  const { idexp, idop, idtac } = useParams();
   
   const handleCheckboxChange = (event) => {
     const { value, checked } = event.target;
@@ -86,13 +87,19 @@ export default function ConfigTache() {
     kpiChunks.push(KPIs.slice(i, i + Math.ceil(KPIs.length / columns)));
   }
 
-  let temp = useParams();
-
   const clickButton = () => {
-    let kpiAff = KPINom.keys();
-    let value = parseInt(valuetext);
+    let keys = KPINom;
+    let kpiAff = [];
+    for (let i = 0; i < keys.length; i++) {
+      kpiAff.push(keys[i].split(' ')[0]);
+    }
+    
+    let value = document.querySelector('.MuiSlider-valueLabel').textContent;
 
-    console.log(temp);
+    console.log(kpiAff.toString());
+    console.log(value);
+
+    // handleCreateTache(value, kpiAff, idexp, idop);
   }
 
   return (
