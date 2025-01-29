@@ -16,3 +16,11 @@ export const createTache = async (iaNbErreurDetecte, visibiliteKpi, idExp, idOpe
   
   return await response.json();
 }
+
+export const getNbTacheParOperateur = async (idExp, idOpe) => {
+  const response = await fetch(`${API_URL}/experience/${idExp}/operator/${idOpe}/nbtaches`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch tache count: ${response.statusText}`);
+  }
+  return await response.json();
+}

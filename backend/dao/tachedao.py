@@ -54,10 +54,13 @@ def create(iaNbErreurDetecte, visibiliteKpi, idOperateur):
     Returns:
         int: L'identifiant de l'enregistrement créé.
     """
+    count = count_by_idOperateur(idOperateur)
+    count += 1
+
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO tache (iaNbErreurDetecte, visibiliteKpi, idOperateur) VALUES (?, ?, ?)', 
-                   (iaNbErreurDetecte, visibiliteKpi, idOperateur))
+    cursor.execute('INSERT INTO tache (numTache, iaNbErreurDetecte, visibiliteKpi, idOperateur) VALUES (?, ?, ?, ?)', 
+                   (count, iaNbErreurDetecte, visibiliteKpi, idOperateur))
     conn.commit()
     id = cursor.lastrowid
     conn.close()

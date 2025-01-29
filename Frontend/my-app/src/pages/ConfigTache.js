@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Slider from '@mui/material/Slider';
@@ -7,7 +7,7 @@ import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Button from '@mui/material/Button';
 import { getNbRaquetteErreur } from '../utils/RaquetteApi';
-import { createTache } from '../utils/tacheApi';
+import { createTache, getNbTacheParOperateur } from '../utils/tacheApi';
 
 // const marks = [
 //   {
@@ -32,20 +32,23 @@ const KPIs = [
   'KPI1 : Temps cible',
   'KPI2 : Nombre de raquettes contrôlées',
   'KPI3 : Temps écoulé',
-  'KPI4 : Taux d avancement',
-  'KPI5 : Productivité à l instant t',
+  'KPI4 : Taux d\'avancement',
+  'KPI5 : Productivité à l\'instant t',
   'KPI6 : Nombre de produits jetés',
   'KPI7 : Nombre de non conformités',
   'KPI8 : Taux de qualité',
   'KPI9 : Prédiction du temps de réparation',
-  'KPI10 : Nombre d erreurs loupées',
+  'KPI10 : Nombre d\'erreurs loupées',
   'KPI11 : Temps restant ',
 ];
 
 export default function ConfigTache() {
   const [KPINom, setKPINom] = useState([]);
   const [nbRaqErreur, setRaqErreur] = useState(0);
-  const { idexp, idop, idtac } = useParams();
+  const [nbTache, setNbTache] = useState();
+  const { idexp, idop } = useParams();
+
+  const navigate = useNavigate();
   
   const handleCheckboxChange = (event) => {
     const { value, checked } = event.target;
@@ -53,6 +56,15 @@ export default function ConfigTache() {
       checked ? [...prev, value] : prev.filter((kpi) => kpi !== value)
     );
   };
+
+  const handleGetTaskNumber = async () => {
+    try {
+      const data = await getNbTacheParOperateur(idexp, idop);
+      setNbTache(data + 1);
+    } catch (error) {
+      console.error('Erreur lors de la récupération du nombre de taches:', error);
+    }
+  }
 
   const handleGetNbRaquetteErreur = async () => {
     try {
@@ -71,7 +83,11 @@ export default function ConfigTache() {
     }
   }
 
-  handleGetNbRaquetteErreur();
+  useEffect(() => {
+    handleGetNbRaquetteErreur();
+    handleGetTaskNumber();
+  }, []);
+
   const marks = []
   for (let i = 0; i <= nbRaqErreur; i++) {
     marks.push({
@@ -99,13 +115,14 @@ export default function ConfigTache() {
     console.log(kpiAff.toString());
     console.log(value);
 
-    // handleCreateTache(value, kpiAff, idexp, idop);
+    handleCreateTache(value, kpiAff, idexp, idop);
+    navigate(`/experience/${idexp}/operateur/${idop}/tache/${nbTache}/analyse`);
   }
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
       <Typography variant="h1" gutterBottom>
-        Task #X
+        Task #{nbTache}
       </Typography>
       <Typography variant="subtitle1" gutterBottom>
         Erreurs à afficher par l'IA : 
