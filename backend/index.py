@@ -19,11 +19,11 @@ conn = get_db_connection()
 
 def add_times(time1, time2):
     """
-    Adds two times together. (mm:ss)
+    Adds two times. (mm:ss)
 
     Args:
-        time1 (str): The first time to add.
-        time2 (str): The second time to add.
+        time1 (str): The first time.
+        time2 (str): The second time.
 
     Returns:
         str: The sum of the two times.
@@ -56,6 +56,52 @@ def subtract_times(time1, time2):
         minutes -= 1
         seconds += 60
     return str(minutes) + ":" + str(seconds).zfill(2)
+
+
+def timeToFloat(time):
+    """
+    Convert a time (mm:ss) to a float (minutes).
+
+    Args:
+        time (str): The time to convert.
+
+    Returns:
+        float: The time in minutes.
+    """
+    time = time.split(":")
+    return int(time[0]) + int(time[1]) / 60
+
+def floatToTime(time):
+    """
+    Convert a float (minutes) to a time (mm:ss).
+
+    Args:
+        time (float): The time to convert.
+
+    Returns:
+        str: The time in mm:ss format.
+    """
+    minutes = int(time)
+    seconds = int((time - minutes) * 60)
+    return str(minutes) + ":" + str(seconds).zfill(2)
+
+def multiply_times(time, factor):
+  """
+  Multiplie une durée au format "mm:ss" par un facteur réel.
+
+  Args:
+    time: La durée au format "mm:ss".
+    factor: Le facteur de multiplication.
+
+  Returns:
+    La durée multipliée, au format "mm:ss".
+  """
+  minutes, seconds = map(int, time.split(':'))
+  total_seconds = minutes * 60 + seconds
+  new_total_seconds = int(total_seconds * factor)
+  new_minutes, new_seconds = divmod(new_total_seconds, 60)
+  return f"{new_minutes:02d}:{new_seconds:02d}"
+
 
 # --- PAGE ACCUEIL --- #
 
@@ -371,8 +417,9 @@ def getErreurAffiche(idexp, idop, idtache):
 
 # --- KPIS --- #
 
+@app.route('/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/tempscible', methods=['GET'])
 @app.route('/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/getkpi1', methods=['GET'])
-def getKpi1(idexp):
+def getKpi1(idexp, idop, idtache):
     if request.method == "GET":
         exp = expDao.get_by_id(idexp)
         if not exp:
@@ -388,31 +435,31 @@ def getKpi1(idexp):
 
         sommeTErreur = "00:00"
         for raquette in raquettesWithErrors:
-            idErr = raquette['idErreur']
             for error in errors:
-                if error['id'] == idErr:
+                if error['idErreur'] == raquette['idErreur']:
                     sommeTErreur = add_times(sommeTErreur, error['tempsDefaut'])
                     break
         
         T_values = {}
         for error in errors:
-            T_values[error['id']] = error['tempsDefaut']
+            T_values[error['idErreur']] = error['tempsDefaut']
 
         op = opDao.get_by_id(idop)
+        Tc = "00:00"
 
         try:
             if option == 'A':
                 Tc = Tmoy
             elif option == 'B':
-                Tc = Tmoy * (nbRaquette / (nbRaquette - nbErreur))
+                Tc = multiply_times(Tmoy, (nbRaquette / (nbRaquette - nbErreur)))
             elif option == 'C':
-                Tc = Tmoy + sommeTErreur
+                Tc = add_times(Tmoy, sommeTErreur) # OK
             elif option == 'D':
-                Tc = Tmoy * sum(Xp_values.values())  # Sum of the operator levels
+                Tc = multiply_times(Tmoy, op['nivExp'])
             elif option == 'E':
-                Tc = (Tmoy * (30 / 24)) * sum(Xp_values.values())  # Multiply by sum of operator levels
+                Tc = multiply_times(Tmoy, (nbRaquette / (nbRaquette - nbErreur) * op['nivExp']))
             elif option == 'F':
-                Tc = (Tmoy + sum(T_values.values())) * sum(Xp_values.values())  # Add T_values sum and multiply by operator levels
+                Tc = multiply_times(add_times(Tmoy, sommeTErreur), op['nivExp'])
             else:
                 return jsonify({'state': 'error', 'message': '[ERROR] Option invalide.'}), 400
 
@@ -423,156 +470,29 @@ def getKpi1(idexp):
         except Exception as e:
             return jsonify({'state': 'error', 'message': str(e)}), 500
         
-@app.route('/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/getkpi5', methods=['GET'])
+# Nombres de raquettes controlées dans la tache (KPI2)
+@app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/raquettescontrolees", methods=['GET'])
+@app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/getkpi2", methods=['GET'])
+def raquettesControlees(idexp, idop, idtache):
+    if request.method == "GET":
+        nbRaquettesControlees = len(anaDao.get_by_idTache(idtache))
+        return jsonify({'nbRaquettesControlees': nbRaquettesControlees}), 200
+    
+# Somme des erreurs non détectées (KPI10)
+@app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/erreursnondetectees", methods=['GET'])
+@app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/getkpi10", methods=['GET'])
+def erreursNonDetectees(idexp, idop, idtache):
+    if request.method == "GET":
+        raquettes = raqDao.get_by_idExperience(idexp)
+        analyses = anaDao.get_by_idTache(idtache)
 
+        erreursNonDetectees = 0
 
-# @app.route('/experience/<int:idexp>/getkpi3', methods=['GET'])
-# def getKpi3(idexp):
-#     if request.method == "GET":
-#         # Read the existing data from the JSON file
-#         if os.path.exists(KPI_FILE_PATH):
-#             with open(KPI_FILE_PATH, 'r') as file:
-#                 kpi_data = json.load(file)
-#         else:
-#             kpi_data = {}
-
-#         # Fetch the KPI3 value for the given experience ID
-#         kpi3 = kpi_data.get(str(idexp), {}).get('kpi3', 0)  # Default to 0 if KPI3 is not found
+        for r in raquettes:
+            if r['idErreur'] != "null":
+                for a in analyses:
+                    if a['idRaquette'] == r['idRaquette']:
+                        if a['isErreur'] == 0:
+                            erreursNonDetectees += 1
         
-#         return jsonify({'kpi3': kpi3}), 200
-
-# @app.route('/experience/<int:idexp>/updatekpi3', methods=['POST'])
-# def updateKpi3(idexp):
-#     if request.method == "POST":
-#         # Fetch the new KPI3 value from the request
-#         new_kpi3 = request.json.get('kpi3')
-        
-#         if new_kpi3 is None:
-#             return jsonify({'state': 'error', 'message': 'Missing KPI3 value'}), 400
-        
-#         # Read the existing data from the JSON file
-#         if os.path.exists(KPI_FILE_PATH):
-#             with open(KPI_FILE_PATH, 'r') as file:
-#                 kpi_data = json.load(file)
-#         else:
-#             kpi_data = {}
-
-#         # Update the KPI3 value for the given experience ID
-#         if str(idexp) not in kpi_data:
-#             kpi_data[str(idexp)] = {}
-        
-#         kpi_data[str(idexp)]['kpi3'] = new_kpi3
-
-#         # Write the updated data back to the JSON file
-#         try:
-#             with open(KPI_FILE_PATH, 'w') as file:
-#                 json.dump(kpi_data, file, indent=4)
-#             return jsonify({'state': 'success', 'message': f'KPI3 updated to {new_kpi3} for experience {idexp}'}), 200
-#         except Exception as e:
-#             return jsonify({'state': 'error', 'message': str(e)}), 500
-        
-# @app.route('/experience/<int:idexp>/updatekpi4', methods=['POST'])
-# def updateKpi4(idexp):
-#     if request.method == "POST":
-#         # Fetch the new KPI4 value from the request
-#         new_kpi4 = request.json.get('kpi4')
-        
-#         if new_kpi4 is None:
-#             return jsonify({'state': 'error', 'message': 'Missing KPI4 value'}), 400
-        
-#         # Read the existing data from the JSON file
-#         if os.path.exists(KPI_FILE_PATH):
-#             with open(KPI_FILE_PATH, 'r') as file:
-#                 kpi_data = json.load(file)
-#         else:
-#             kpi_data = {}
-
-#         # Update the KPI4 value for the given experience ID
-#         if str(idexp) not in kpi_data:
-#             kpi_data[str(idexp)] = {}
-        
-#         kpi_data[str(idexp)]['kpi4'] = new_kpi4
-
-#         # Write the updated data back to the JSON file
-#         try:
-#             with open(KPI_FILE_PATH, 'w') as file:
-#                 json.dump(kpi_data, file, indent=4)
-#             return jsonify({'state': 'success', 'message': f'KPI4 updated to {new_kpi4} for experience {idexp}'}), 200
-#         except Exception as e:
-#             return jsonify({'state': 'error', 'message': str(e)}), 500
-        
-# @app.route('/experience/<int:idexp>/getkpi4', methods=['GET'])
-# def getKpi4(idexp):
-#     if request.method == "GET":
-#         # Read the existing data from the JSON file
-#         if os.path.exists(KPI_FILE_PATH):
-#             with open(KPI_FILE_PATH, 'r') as file:
-#                 kpi_data = json.load(file)
-#         else:
-#             kpi_data = {}
-
-#         # Fetch the KPI4 value for the given experience ID
-#         kpi4 = kpi_data.get(str(idexp), {}).get('kpi4', 0)  # Default to 0 if KPI4 is not found
-        
-#         return jsonify({'kpi4': kpi4}), 200
-
-
-# @app.route('/experience/<int:idexp>/updatekpi6', methods=['POST'])
-# def updateKpi6(idexp):
-#     if request.method == "POST":
-#         # Fetch the new KPI6 value from the request
-#         new_kpi6 = request.json.get('kpi6')
-        
-#         if new_kpi6 is None:
-#             return jsonify({'state': 'error', 'message': 'Missing KPI6 value'}), 400
-        
-#         # Read the existing data from the JSON file
-#         if os.path.exists(KPI_FILE_PATH):
-#             with open(KPI_FILE_PATH, 'r') as file:
-#                 kpi_data = json.load(file)
-#         else:
-#             kpi_data = {}
-
-#         # Update the KPI6 value for the given experience ID
-#         kpi_data[str(idexp)] = {'kpi6': new_kpi6}
-
-#         # Write the updated data back to the JSON file
-#         try:
-#             with open(KPI_FILE_PATH, 'w') as file:
-#                 json.dump(kpi_data, file, indent=4)
-#             return jsonify({'state': 'success', 'message': f'KPI6 updated to {new_kpi6} for experience {idexp}'}), 200
-#         except Exception as e:
-#             return jsonify({'state': 'error', 'message': str(e)}), 500
-# # KPI7 -> Nb de non conformités (KPI6 + erreurs non détectées) 
-# @app.route('/experience/<int:idexp>/getkpi7', methods=['GET'])
-# def getKpi7(idexp):
-#     if request.method == "GET":
-#         # Fetch experience data
-#         exp = expDao.get_by_id(idexp)
-#         if not exp:
-#             return jsonify({'state': 'error', 'message': 'Experience not found'}), 404
-        
-#         # Fetch errors for T_values
-#         errors = errDao.get_by_idExperience(idexp)
-#         T_values = {}
-#         for error in errors:
-#             T_values[error['id']] = error['tempsDefaut']
-        
-#         # Fetch operator data for Xp_values
-#         ops = opDao.get_by_idExperience(idexp)
-#         Xp_values = {}
-#         for op in ops:
-#             Xp_values[op['id']] = int(op['nivExp'])  # Ensure 'nivExp' is treated as an integer
-        
-#         # Calculate KPI6 (e.g., number of repairs or issues detected)
-#         # Assuming KPI6 is related to the number of repairs performed
-#         kpi6 = sum(1 for error in errors if error['repaired'])  # Example: count errors that were repaired
-        
-#         # Identify undetected errors (where operator decided not to repair)
-#         undetected_errors = sum(1 for error in errors if not error['repaired'] and error['detected'])
-        
-#         # Calculate KPI7: KPI6 + Undetected Errors
-#         kpi7 = kpi6 + undetected_errors
-        
-#         # Return the KPI7 value
-#         return jsonify({'kpi7': kpi7}), 200
+        return jsonify({'erreursNonDetectees': erreursNonDetectees}), 200

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import raquetteImage from '../assets/images/Bouton ressort monté a l_envers.jpeg';
 import {
     Container,
@@ -19,6 +20,11 @@ import {
     CheckCircle as CheckCircleIcon,
     Delete as DeleteIcon
 } from '@mui/icons-material';
+import {
+    getKpi1,
+    getKpi2,
+    getKpi10
+} from '../utils/kpiApi';
 
 const KPI_LABELS = [
     'Temps cible',
@@ -34,8 +40,9 @@ const KPI_LABELS = [
     'Temps restant',
 ];
 
-const KpiDashboard = ({ idexp }) => {
-    // État initial
+function KpiDashboard() {
+    const { idexp, idop, idtac} = useParams();
+
     const [state, setState] = useState({
         kpiData: {
             kpi1: 'Loading...',
@@ -52,6 +59,17 @@ const KpiDashboard = ({ idexp }) => {
         raquetteName: '',
         timer: 0
     });
+    const [kpi1, setKpi1] = useState('Loading...');
+    const [kpi2, setKpi2] = useState('Loading...');
+    const [kpi3, setKpi3] = useState('Loading...');
+    const [kpi4, setKpi4] = useState('Loading...');
+    const [kpi5, setKpi5] = useState('Loading...');
+    const [kpi6, setKpi6] = useState('Loading...');
+    const [kpi7, setKpi7] = useState('Loading...');
+    const [kpi8, setKpi8] = useState('Loading...');
+    const [kpi9, setKpi9] = useState('Loading...');
+    const [kpi10, setKpi10] = useState('Loading...');
+    const [kpi11, setKpi11] = useState('Loading...');
 
     // Constants
     const TIME_CYCLE = 10;
@@ -146,6 +164,18 @@ const KpiDashboard = ({ idexp }) => {
                 }));
             }
         };
+
+        const handleUpdateKpiData = async () => {
+            const kpi1Data = await getKpi1(idexp, idop, idtac);
+            const kpi2Data = await getKpi2(idexp, idop, idtac);
+            const kpi10Data = await getKpi10(idexp, idop, idtac);
+            
+            console.log(kpi1Data);
+            console.log(kpi2Data);
+            console.log(kpi10Data);
+        };
+
+        handleUpdateKpiData();
 
         fetchData();
     }, [idexp]);
