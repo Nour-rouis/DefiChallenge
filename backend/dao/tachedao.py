@@ -15,9 +15,10 @@ def get_all():
     taches = []
     for row in rows:
         taches.append({"idTache": row[0], 
-                       "iaNbErreurDetecte": row[1],
-                       "visibiliteKpi": row[2], 
-                       "idOperateur": row[3]})
+                       "numTache": row[1],
+                       "iaNbErreurDetecte": row[2],
+                       "visibiliteKpi": row[3], 
+                       "idOperateur": row[4]})
     return taches
 
 def get_by_id(id):
@@ -37,9 +38,10 @@ def get_by_id(id):
     row = cursor.fetchone()
     conn.close()
     return {"idTache": row[0], 
-            "iaNbErreurDetecte": row[1], 
-            "visibiliteKpi": row[2],
-            "idOperateur": row[3]}
+            "numTache": row[1],
+            "iaNbErreurDetecte": row[2], 
+            "visibiliteKpi": row[3],
+            "idOperateur": row[4]}
 
 def create(iaNbErreurDetecte, visibiliteKpi, idOperateur):
     """
@@ -62,7 +64,7 @@ def create(iaNbErreurDetecte, visibiliteKpi, idOperateur):
     print("[DATABASE] Nouvelle Tache #", id)
     return id
 
-def update(id, iaNbErreurDetecte, visibiliteKpi, idOperateur):
+def update(id, numTache, iaNbErreurDetecte, visibiliteKpi, idOperateur):
     """
     Met à jour un enregistrement de la table tache selon l'identifiant spécifié.
     
@@ -76,8 +78,8 @@ def update(id, iaNbErreurDetecte, visibiliteKpi, idOperateur):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('UPDATE tache SET iaNbErreurDetecte = ?, visibiliteKpi = ?, idOperateur = ? WHERE idTache = ?', 
-                   (iaNbErreurDetecte, visibiliteKpi, idOperateur, id))
+    cursor.execute('UPDATE tache SET numTache = ?, iaNbErreurDetecte = ?, visibiliteKpi = ?, idOperateur = ? WHERE idTache = ?', 
+                   (numTache, iaNbErreurDetecte, visibiliteKpi, idOperateur, id))
     conn.commit()
     conn.close()
     return True
@@ -119,10 +121,29 @@ def get_by_idOperateur(idOperateur):
     taches = []
     for row in rows:
         taches.append({"idTache": row[0], 
-                       "iaNbErreurDetecte": row[1], 
-                       "visibiliteKpi": row[2],
-                       "idOperateur": row[3]})
+                       "numTache": row[1],
+                       "iaNbErreurDetecte": row[2], 
+                       "visibiliteKpi": row[3],
+                       "idOperateur": row[4]})
     return taches
+
+def count_by_idOperateur(idOperateur):
+    """
+    Compte le nombre d'enregistrements de la table tache selon l'identifiant de l'opérateur spécifié.
+    
+    Args:
+        idOperateur (int): L'identifiant de l'opérateur.
+    
+    Returns:
+        int: Le nombre d'enregistrements.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT COUNT(*) FROM tache WHERE idOperateur = ?', 
+                   (idOperateur,))
+    row = cursor.fetchone()
+    conn.close()
+    return row[0]
 
 def get_by_idExperience(idExperience):
     """
@@ -143,9 +164,10 @@ def get_by_idExperience(idExperience):
     taches = []
     for row in rows:
         taches.append({"idTache": row[0], 
-                       "iaNbErreurDetecte": row[1],
-                       "visibiliteKpi": row[2],
-                       "idOperateur": row[3]})
+                       "numTache": row[1],
+                       "iaNbErreurDetecte": row[2],
+                       "visibiliteKpi": row[3],
+                       "idOperateur": row[4]})
     return taches
 
 def get_raquettes_restantes(idTache):
