@@ -9,21 +9,6 @@ import Button from '@mui/material/Button';
 import { getNbRaquetteErreur } from '../utils/RaquetteApi';
 import { createTache, getNbTacheParOperateur } from '../utils/tacheApi';
 
-// const marks = [
-//   {
-//     value: 0,
-//     label: '0%',
-//   },
-//   {
-//     value: 87,
-//     label: '87%',
-//   },
-//   {
-//     value: 100,
-//     label: '100%',
-//   },
-// ];
-
 function valuetext(value) {
   return `${value}%`;
 }

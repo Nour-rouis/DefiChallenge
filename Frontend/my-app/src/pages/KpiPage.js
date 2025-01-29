@@ -1,76 +1,129 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Grid, Paper, Typography, Button, Box, CircularProgress, TextField } from '@mui/material';
 import raquetteImage from '../assets/images/Bouton ressort monté a l_envers.jpeg';
-import { getKpi1 } from '../utils/kpiApi';
+import {
+    Container,
+    Grid,
+    Paper,
+    Typography,
+    Button,
+    Box,
+    CircularProgress,
+    Card,
+    CardContent,
+    CardHeader,
+    IconButton
+} from '@mui/material';
+import {
+    Timer as TimerIcon,
+    Warning as WarningIcon,
+    CheckCircle as CheckCircleIcon,
+    Delete as DeleteIcon
+} from '@mui/icons-material';
 
-const KpiPage = ({ idexp }) => {
-    const [kpiData, setKpiData] = useState({
-        kpi1: 'Loading...',
-        kpi2: '0',
-        kpi3: '75s',
-        kpi4: '0%',
-        kpi5: '0',
-        kpi6: '0',
+const KPI_LABELS = [
+    'Temps cible',
+    'Nombre de raquettes contrôlées',
+    'Temps écoulé',
+    'Taux d\'avancement',
+    'Productivité à l\'instant t',
+    'Nombre de produits jetés',
+    'Nombre de non conformités',
+    'Taux de qualité',
+    'Prédiction du temps de réparation',
+    'Nombre d\'erreurs loupées',
+    'Temps restant',
+];
+
+const KpiDashboard = ({ idexp }) => {
+    // État initial
+    const [state, setState] = useState({
+        kpiData: {
+            kpi1: 'Loading...',
+            kpi2: '0',
+            kpi3: '75s',
+            kpi4: '0%',
+            kpi5: '0',
+            kpi6: '0',
+        },
+        loading: true,
+        error: null,
+        showRaquetteSection: false,
+        scannerInput: '',
+        raquetteName: '',
+        timer: 0
     });
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [showRaquetteSection, setShowRaquetteSection] = useState(false);
-    const [scannerInput, setScannerInput] = useState('');
-    const [raquetteName, setRaquetteName] = useState('');
-    const [timer, setTimer] = useState(0);
-    const timeCycle = 10; 
-    const errorTimes = { T1: 2, T2: 3 };
-    const errorFrequencies = { T1: 2, T2: 1 };
 
+    // Constants
+    const TIME_CYCLE = 10;
+    const ERROR_TIMES = { T1: 2, T2: 3 };
+    const ERROR_FREQUENCIES = { T1: 2, T2: 1 };
+
+    // Effet pour gérer le focus global et la saisie
     useEffect(() => {
-        const fetchKpiData = async () => {
-            try {
-                const kpi1Value = await getKpi1(idexp);
-                setKpiData(prev => ({ ...prev, kpi1: kpi1Value }));
-            } catch (err) {
-                setError(err.message);
-            } finally {
-                setLoading(false);
+        const handleKeyPress = (e) => {
+            if (!state.showRaquetteSection && 
+                !/^(?:input|textarea|select|button)$/i.test(e.target.tagName)) {
+                setState(prev => ({
+                    ...prev,
+                    scannerInput: prev.scannerInput + e.key
+                }));
             }
         };
 
-        fetchKpiData();
-        const interval = setInterval(() => setTimer(prev => prev + 1), 1000);
-        return () => clearInterval(interval);
-    }, [idexp]);
+        const handleKeyDown = (e) => {
+            if (e.key === 'Enter' && !state.showRaquetteSection) {
+                setState(prev => ({
+                    ...prev,
+                    showRaquetteSection: true,
+                    raquetteName: prev.scannerInput,
+                    scannerInput: ''
+                }));
+            }
+        };
 
-    useEffect(() => {
-        const totalRepairTime = timer;
-        const kpi3Value = (totalRepairTime / 600) * 100;
-        setKpiData(prev => ({ ...prev, kpi3: kpi3Value.toFixed(2) + 's' }));
-    }, [timer]);
+        window.addEventListener('keypress', handleKeyPress);
+        window.addEventListener('keydown', handleKeyDown);
 
-    const handleInputSubmit = (event) => {
-        if (event.key === 'Enter') {
-            setShowRaquetteSection(true);
-            setRaquetteName(scannerInput);
-            setScannerInput('');
-        }
-    };
+        return () => {
+            window.removeEventListener('keypress', handleKeyPress);
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [state.showRaquetteSection]);
 
-    const calculateObjectiveTime = () => {
-        return Object.keys(errorTimes).reduce((total, error) => {
-            return total + (errorTimes[error] * (errorFrequencies[error] || 0));
-        }, timeCycle);
-    };
-
+    // Gestionnaires d'événements
     const handleRepair = () => {
-        setKpiData(prev => {
-            const newKpi2 = parseInt(prev.kpi2) + 1;
+        setState(prev => {
+            const newKpi2 = parseInt(prev.kpiData.kpi2) + 1;
             const kpi4 = (100 * newKpi2) / 30;
-            const tempsObjectifDuMoment = calculateObjectiveTime();
-            const kpi5Value = ((100 * tempsObjectifDuMoment) / parseInt(prev.kpi3)).toFixed(2);
-            return { ...prev, kpi2: newKpi2.toString(), kpi4: kpi4.toFixed(2) + '%', kpi5: kpi5Value };
+            const tempsObjectif = calculateObjectiveTime();
+            const kpi5Value = ((100 * tempsObjectif) / parseInt(prev.kpiData.kpi3)).toFixed(2);
+
+            return {
+                ...prev,
+                kpiData: {
+                    ...prev.kpiData,
+                    kpi2: newKpi2.toString(),
+                    kpi4: `${kpi4.toFixed(2)}%`,
+                    kpi5: kpi5Value
+                }
+            };
         });
     };
 
     const handleThrowAway = () => {
-        setKpiData(prev => ({ ...prev, kpi6: (parseInt(prev.kpi6) + 1).toString() }));
+        setState(prev => ({
+            ...prev,
+            kpiData: {
+                ...prev.kpiData,
+                kpi6: (parseInt(prev.kpiData.kpi6) + 1).toString()
+            }
+        }));
+    };
+
+    // Utilitaires
+    const calculateObjectiveTime = () => {
+        return Object.entries(ERROR_TIMES).reduce((total, [error, time]) =>
+            total + (time * (ERROR_FREQUENCIES[error] || 0)), TIME_CYCLE);
     };
 
     const formatTime = (seconds) => {
@@ -79,53 +132,167 @@ const KpiPage = ({ idexp }) => {
         return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
     };
 
-    if (loading) return <Box display="flex" justifyContent="center" alignItems="center" height="100vh"><CircularProgress /></Box>;
-    if (error) return <Box display="flex" justifyContent="center" alignItems="center" height="100vh"><Typography variant="h6" color="error">Error: {error}</Typography></Box>;
+    // Effets
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                setState(prev => ({ ...prev, loading: false }));
+            } catch (err) {
+                setState(prev => ({
+                    ...prev,
+                    error: err.message,
+                    loading: false
+                }));
+            }
+        };
+
+        fetchData();
+    }, [idexp]);
+
+    useEffect(() => {
+        let interval;
+        if (state.showRaquetteSection) {
+            interval = setInterval(() => {
+                setState(prev => {
+                    const newTimer = prev.timer + 1;
+                    const kpi3Value = ((newTimer / 600) * 100).toFixed(2);
+                    return {
+                        ...prev,
+                        timer: newTimer,
+                        kpiData: {
+                            ...prev.kpiData,
+                            kpi3: `${kpi3Value}s`
+                        }
+                    };
+                });
+            }, 1000);
+        }
+        return () => clearInterval(interval);
+    }, [state.showRaquetteSection]);
+
+    if (state.loading) {
+        return (
+            <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+                <CircularProgress />
+            </Box>
+        );
+    }
+
+    if (state.error) {
+        return (
+            <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+                <Card>
+                    <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                        <WarningIcon color="error" sx={{ fontSize: 48 }} />
+                        <Typography color="error">Error: {state.error}</Typography>
+                    </CardContent>
+                </Card>
+            </Box>
+        );
+    }
 
     return (
-        <Container maxWidth="lg" style={{ marginTop: '20px' }}>
-            <Grid container spacing={4}>
-                <Grid item xs={12} md={6}>
-                    <Paper elevation={3} style={{ padding: '20px' }}>
-                        <Typography variant="h5" gutterBottom>KPI Data</Typography>
-                        {Object.entries(kpiData).map(([key, value]) => (
-                            <Typography key={key} variant="body1" gutterBottom>
-                                {`${key.replace('kpi', 'KPI ')}: ${value}`}
-                            </Typography>
-                        ))}
-                    </Paper>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                    <Paper elevation={3} style={{ padding: '20px', textAlign: 'center' }}>
-                        <Typography variant="h5" gutterBottom>Scanner Input</Typography>
-                        <TextField label="Scanner Input" variant="outlined" value={scannerInput} onChange={(e) => setScannerInput(e.target.value)} onKeyDown={handleInputSubmit} placeholder="Scan or type here" />
-                    </Paper>
-                </Grid>
-                {showRaquetteSection && (
-                    <Grid item xs={12}>
-                        <Paper elevation={3} style={{ padding: '20px', textAlign: 'center' }}>
-                            <Typography variant="h6" gutterBottom>Nom de la raquette : {raquetteName || 'Scannez une raquette pour afficher son nom'}</Typography>
-                            <img src={raquetteImage} alt="Raquette" style={{ maxWidth: '100%', height: 'auto', marginBottom: '10px' }} />
-                        </Paper>
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+            {!state.showRaquetteSection ? (
+                <Card sx={{ maxWidth: 600, margin: '0 auto' }}>
+                    <CardHeader title="Scanner une raquette" />
+                    <CardContent>
+                        <Typography variant="body1" sx={{ mb: 2 }}>
+                            Scannez le code de la raquette...
+                        </Typography>
+                    </CardContent>
+                </Card>
+            ) : (
+                <Grid container spacing={3}>
+                    <Grid item xs={12} md={6} sx={{ display: 'flex' }}>
+                        <Card sx={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+                            <CardHeader title="Indicateurs KPI" />
+                            <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                {Object.entries(state.kpiData).map(([key, value]) => (
+                                    <Box key={key} sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                                        <Typography variant="subtitle1">{KPI_LABELS[parseInt(key.slice(3)) - 1]}</Typography>
+                                        <Typography>{value}</Typography>
+                                    </Box>
+                                ))}
+                            </CardContent>
+                        </Card>
                     </Grid>
-                )}
-                {showRaquetteSection && (
-                    <Grid item xs={12} md={6}>
-                        <Paper elevation={3} style={{ padding: '20px', textAlign: 'center' }}>
-                            <Typography variant="h5" gutterBottom>Actions</Typography>
-                            <Box display="flex" flexDirection="column" gap={2}>
-                                <Button variant="contained" color="primary" onClick={handleRepair}>Réparer</Button>
-                                <Button variant="contained" color="secondary" onClick={handleThrowAway}>Jeter</Button>
-                            </Box>
-                        </Paper>
+
+                    <Grid item xs={12} md={6} sx={{ display: 'flex' }}>
+                        <Card sx={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+                            <CardHeader title={`Raquette ${state.raquetteName}`} />
+                            <CardContent sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <Box
+                                    component="img"
+                                    src={raquetteImage}
+                                    alt="Raquette"
+                                    sx={{
+                                        width: '100%',
+                                        height: 'auto',
+                                        borderRadius: 1,
+                                        maxHeight: '300px',
+                                        objectFit: 'contain'
+                                    }}
+                                />
+                            </CardContent>
+                        </Card>
                     </Grid>
-                )}
-            </Grid>
-            <Paper elevation={3} style={{ padding: '10px', textAlign: 'center', marginTop: '20px' }}>
-                <Typography variant="h6" gutterBottom>Timer: {formatTime(timer)}</Typography>
-            </Paper>
+
+                    <Grid item xs={12} md={6} sx={{ display: 'flex' }}>
+                        <Card sx={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+                            <CardHeader title="Actions" />
+                            <CardContent sx={{
+                                flexGrow: 1,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 2,
+                                justifyContent: 'center'
+                            }}>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    startIcon={<CheckCircleIcon />}
+                                    onClick={handleRepair}
+                                    fullWidth
+                                >
+                                    Réparer
+                                </Button>
+                                <Button
+                                    variant="contained"
+                                    color="error"
+                                    startIcon={<DeleteIcon />}
+                                    onClick={handleThrowAway}
+                                    fullWidth
+                                >
+                                    Jeter
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    </Grid>
+
+                    <Grid item xs={12} md={6} sx={{ display: 'flex' }}>
+                        <Card sx={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+                            <CardHeader title="Chronomètre" />
+                            <CardContent sx={{
+                                flexGrow: 1,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    <TimerIcon sx={{ fontSize: 30 }} />
+                                    <Typography variant="h4">
+                                        {formatTime(state.timer)}
+                                    </Typography>
+                                </Box>
+                            </CardContent>
+                        </Card>
+                    </Grid>
+                </Grid>
+            )}
         </Container>
     );
 };
 
-export default KpiPage;
+export default KpiDashboard;

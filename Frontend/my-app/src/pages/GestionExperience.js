@@ -68,7 +68,7 @@ function GestionExperience() {
             const data = await response.json();
 
             if (data.state === 'success') {
-                navigate(`/experience/${idexp}/tache/${data.id}`);
+                navigate(`/experience/${idexp}/operateur/${data.id}/configtache`);
             }
         } catch (error) {
             console.error('Erreur lors de la création de l\'opérateur:', error);
@@ -239,8 +239,8 @@ function GestionExperience() {
                         name="radio-buttons-group"
                     >
                         <FormControlLabel control={<Radio onChange={() => handleOptionChange("A")} value={"A"} />} label="Option A: Tc = Tmoy" />
-                        <FormControlLabel control={<Radio onChange={() => handleOptionChange("B")} value={"B"} />} label="Option B: Tc = Tmoy * (24/30)" />
-                        <FormControlLabel control={<Radio onChange={() => handleOptionChange("C")} value={"C"} />} label="Option C: Tc = Tmoy * (Nombre de raquettes / 24) + (T1 + T2 + ... + T6)" />
+                        <FormControlLabel control={<Radio onChange={() => handleOptionChange("B")} value={"B"} />} label="Option B: Tc = Tmoy * (30/24)" />
+                        <FormControlLabel control={<Radio onChange={() => handleOptionChange("C")} value={"C"} />} label="Option C: Tc = Tmoy + (T1 + T2 + ... + T6)" />
                         <FormControlLabel control={<Radio onChange={() => handleOptionChange("D")} value={"D"} />} label="Option D: Option A * expertise" />
                         <FormControlLabel control={<Radio onChange={() => handleOptionChange("E")} value={"E"} />} label="Option E: Option B * expertise" />
                         <FormControlLabel control={<Radio onChange={() => handleOptionChange("F")} value={"F"} />} label="Option F: Option C * expertise" />
