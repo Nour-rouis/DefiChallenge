@@ -405,15 +405,16 @@ def erreurImage(idexp, iderr):
 @app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/getErreurAffiche", methods=['GET'])
 def getErreurAffiche(idexp, idop, idtache):
     if request.method == "GET":
-        erreurs = raqDao.get_raquette_with_error(idexp)
-        idErreurs = []
-        for erreur in erreurs:
-            idErreurs.append(erreur['idErreur'])
+        raqsWithErreurs = raqDao.get_raquette_with_error(idexp)
+        print(raqsWithErreurs)
+        idRaqErreursAAffiche = []
+        for raqWithErreurs in raqsWithErreurs:
+            idRaqErreursAAffiche.append(raqWithErreurs['idRaquette'])
 
         iaNbErreur = tacheDao.get_by_id(idtache)['iaNbErreurDetecte']
-        random.seed(iaNbErreur)
-        errAffiche = random.sample(idErreurs, iaNbErreur)
-        return jsonify(errAffiche)
+        random.seed(iaNbErreur + idexp)
+        raqsAAffiche = random.sample(idRaqErreursAAffiche, iaNbErreur)
+        return jsonify(raqsAAffiche)
 
 # --- KPIS --- #
 
@@ -465,7 +466,7 @@ def getKpi1(idexp, idop, idtache):
 
             # KPI1 -> Temps cible
             kpi1 = Tc
-            return jsonify({'kpi1': kpi1}), 200
+            return jsonify({'tempsCible': kpi1}), 200
 
         except Exception as e:
             return jsonify({'state': 'error', 'message': str(e)}), 500
@@ -478,6 +479,40 @@ def raquettesControlees(idexp, idop, idtache):
         nbRaquettesControlees = len(anaDao.get_by_idTache(idtache))
         return jsonify({'nbRaquettesControlees': nbRaquettesControlees}), 200
     
+# Nombre de raquettes jetees (KPI6)
+@app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/raquettesjetees", methods=['GET'])
+@app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/getkpi6", methods=['GET'])
+def raquettesJetees(idexp, idop, idtache):
+    if request.method == "GET":
+        raquettes = raqDao.get_by_idExperience(idexp)
+        analyses = anaDao.get_by_idTache(idtache)
+
+        raquettesJetees = 0
+
+        for r in raquettes:
+            if r['idErreur'] != "null":
+                for a in analyses:
+                    if a['idRaquette'] == r['idRaquette']:
+                        if a['isErreur'] == 2:
+                            raquettesJetees += 1
+        
+        return jsonify({'raquettesJetees': raquettesJetees}), 200
+    
+# Temps de réparation en fonction de l'expertise de l'opérateur (KPI9)
+@app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/analyse/<int:idraquette>/tempsreparation", methods=['GET'])
+@app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/analyse/<int:idraquette>/getkpi9", methods=['GET'])
+def tempsReparation(idexp, idop, idtache, idraquette):
+    if request.method == "GET":
+        raquette = raqDao.get_by_id(idraquette)
+        erreur = errDao.get_by_id(raquette['idErreur'])
+        op = opDao.get_by_id(idop)
+        
+        tempsReparation = "00:00"
+        if raquette['idErreur'] != None:
+            tempsReparation = multiply_times(erreur['tempsDefaut'], op['nivExp'])
+        
+        return jsonify({'tempsReparation': tempsReparation}), 200
+
 # Somme des erreurs non détectées (KPI10)
 @app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/erreursnondetectees", methods=['GET'])
 @app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/getkpi10", methods=['GET'])

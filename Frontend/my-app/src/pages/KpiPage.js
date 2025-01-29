@@ -23,7 +23,10 @@ import {
 import {
     getKpi1,
     getKpi2,
-    getKpi10
+    getKpi6,
+    getKpi9,
+    getKpi10,
+    getNombreRaquettes
 } from '../utils/kpiApi';
 
 const KPI_LABELS = [
@@ -166,13 +169,18 @@ function KpiDashboard() {
         };
 
         const handleUpdateKpiData = async () => {
-            const kpi1Data = await getKpi1(idexp, idop, idtac);
-            const kpi2Data = await getKpi2(idexp, idop, idtac);
-            const kpi10Data = await getKpi10(idexp, idop, idtac);
+            const kpi1Value = (await getKpi1(idexp, idop, idtac)).tempsCible;
+            const kpi2Value = (await getKpi2(idexp, idop, idtac)).nbRaquettesControlees;
+            const kpi6Value = (await getKpi6(idexp, idop, idtac)).raquettesJetees;
+            const kpi9Value = (await getKpi9(idexp, idop, idtac)).tempsReparation;
+            const kpi10Value = (await getKpi10(idexp, idop, idtac, idraquette)).erreursNonDetectees;
             
-            console.log(kpi1Data);
-            console.log(kpi2Data);
-            console.log(kpi10Data);
+            const nbRaquettes = (await getNombreRaquettes(idexp, idop, idtac));
+
+            const kpi4Value = 100 * kpi2Value / nbRaquettes;
+            const kpi7Value = kpi6Value + kpi10Value;
+            const kpi8Value = 100 * (kpi2Value - kpi7Value) / kpi2Value;
+            const kpi11Value = kpi1Value - kpi3Value;
         };
 
         handleUpdateKpiData();

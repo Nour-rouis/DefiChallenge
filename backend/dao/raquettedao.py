@@ -174,7 +174,7 @@ def get_raquette_with_error(idExperience):
 
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM raquette WHERE idErreur IS NOT NULL AND idExperience = ?', 
+    cursor.execute('SELECT * FROM raquette WHERE idErreur AND idExperience = ?', 
                    (idExperience,))
     rows = cursor.fetchall()
     conn.close()
