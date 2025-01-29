@@ -83,11 +83,12 @@ def update(id, nom, image, tempsDefaut, idExperience):
         nom (str): Le nom de l'erreur.
         image (str): Le chemin de l'image.
         tempsDefaut (str): Temps moyen de réparation du défaut.
+        idExperience (int): L'identifiant de l'expérience.
     """
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute('UPDATE erreur SET nom = ?, image = ?, tempsDefaut = ?, idExperience = ? WHERE idErreur = ?',
-                   (nom, image, tempsDefaut, idExperience))
+                   (nom, image, tempsDefaut, idExperience, id))
     conn.commit()
     conn.close()
     print('[DATABASE] Erreur #', id, "mis à jour")

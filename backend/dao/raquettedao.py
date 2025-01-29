@@ -75,7 +75,7 @@ def update(idRaquette, nomRaquette, idErreur, idExperience):
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('UPDATE raquette SET nomRaquette = ?; idErreur = ?, idExperience = ? WHERE idRaquette = ?', 
+    cursor.execute('UPDATE raquette SET nomRaquette = ?, idErreur = ?, idExperience = ? WHERE idRaquette = ?', 
                    (nomRaquette, idErreur, idExperience, idRaquette))
     conn.commit()
     conn.close()
@@ -133,7 +133,7 @@ def count_errors_by_idExperience(idExperience):
 
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('SELECT COUNT(*) as COUNT FROM raquette WHERE idErreur IS NOT NULL AND idExperience = ?',
+    cursor.execute('SELECT COUNT(*) as COUNT FROM raquette WHERE idErreur != "null" AND idExperience = ?',
                    (idExperience,))
     row = cursor.fetchone()
     conn.close()

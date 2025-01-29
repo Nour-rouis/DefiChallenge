@@ -35,6 +35,12 @@ function GestionExperience() {
     const [nbTache, setNbTache] = useState(0);
     const [raquettesLength, setRaquettesLength] = useState(0);
     const [openSnackbar, setOpenSnackbar] = useState(false);
+    const [tmoyError, setTmoyError] = useState(false);
+
+    const validateTempsFormat = (temps) => {
+        const regex = /^(\d+):([0-5][0-9])$/;
+        return regex.test(temps);
+    };
 
     const handleOptionChange = (option) => {
         setExperience({ ...experience, option });
@@ -56,6 +62,23 @@ function GestionExperience() {
         setOpen(false);
     }
 
+    const [openTmoy, setOpenTmoy] = useState(false);
+    const [tmoy, setTmoy] = useState(0);
+
+    const handleSaveTmoy = async () => {
+        if (!validateTempsFormat(tmoy)) {
+            setTmoyError(true);
+            return;
+        }
+        setOpenTmoy(false);
+        setExperience({ ...experience, Tmoy: tmoy });
+        await updateExperience({ ...experience, Tmoy: tmoy });
+    };
+
+    const handleCloseTmoy = () => {
+        setOpenTmoy(false);
+    };
+
     const handleSaveTache = async () => {
         setOpen(false);
         setExperience({ ...experience, nombreTache: nbTache });
@@ -72,8 +95,10 @@ function GestionExperience() {
             try {
                 setLoading(true);
                 const data = await getExperience(id);
+                console.log(data)
                 setExperience(data);
                 setNbTache(data.nombreTache);
+                setTmoy(data.Tmoy);  // Ajoutez cette ligne
                 const raquettes = await getRaquettes(id);
                 setRaquettesLength(raquettes.length);
                 setError(null);
@@ -88,7 +113,6 @@ function GestionExperience() {
         if (id) {
             fetchExperience();
         }
-
     }, [id]);
 
     const textFields = [experience ? <TextField
@@ -143,6 +167,18 @@ function GestionExperience() {
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Typography variant="body1">
+                            Tmoy: {experience.Tmoy}
+                        </Typography>
+                        <IconButton
+                            size="small"
+                            onClick={() => setOpenTmoy(true)}
+                            aria-label="modifier Tmoy"
+                        >
+                            <EditIcon fontSize="small" />
+                        </IconButton>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant="body1">
                             Nombre de tâches: {experience.nombreTache}
                         </Typography>
                         <IconButton
@@ -178,12 +214,35 @@ function GestionExperience() {
                 <Button variant="contained" onClick={handleSave}>
                     Enregistrer les parametres d'experiences
                 </Button>
-                
+
                 <Button variant="contained" color='success'>
-                    Démarrer l'expérience
+                    Démarrer la séquence
                 </Button>
             </Grid>
-            <CustomModal isEditing={true} onValid={handleSaveTache} onClose={handleCloseTache} open={open} title={"Le nombre de tâches"} textFields={textFields} />
+            <CustomModal isEditing={true} onValid={handleSaveTache} onClose={handleCloseTache} open={open} title={"Le nombre de tâches"} textFields={textFields} />+<CustomModal
+                isEditing={true}
+                onValid={handleSaveTmoy}
+                onClose={handleCloseTmoy}
+                open={openTmoy}
+                title={"Tmoy"}
+                textFields={[
+                    experience ?
+                        <TextField
+                            id="tmoy"
+                            label="Tmoy"
+                            type="text"
+                            fullWidth
+                            value={tmoy}
+                            onChange={(e) => {
+                                setTmoy(e.target.value);
+                                setTmoyError(!validateTempsFormat(e.target.value));
+                            }}
+                            error={tmoyError}
+                            helperText={tmoyError ? "Format invalide. Utilisez mm:ss (ex: 15:30)" : ""}
+                        />
+                        : null
+                ]}
+            />
             <Snackbar
                 open={openSnackbar}
                 autoHideDuration={6000}
