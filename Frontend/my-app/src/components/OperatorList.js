@@ -22,11 +22,33 @@ const OperatorList = () => {
       try {
         const response = await fetch(`http://localhost:5000/experience/${idexp}/operators`);
         const data = await response.json();
-        actions.setRows(data.map(operator => ({
-          ...operator,
-          id: operator.idOperateur,
-          nivExp: operator.nivExp + '%'
-        })));
+        actions.setRows(data.map(operator => {
+          let nivExpText;
+          switch (operator.nivExp) {
+            case 1.2:
+              nivExpText = 'Débutant (120%)';
+              break;
+            case 1.1:
+              nivExpText = 'Novice (110%)';
+              break;
+            case 1:
+              nivExpText = 'Normal (100%)';
+              break;
+            case 0.9:
+              nivExpText = 'Avancé (90%)';
+              break;
+            case 0.8:
+              nivExpText = 'Expert (80%)';
+              break;
+            default:
+              nivExpText = `${operator.nivExp}%`;
+          }
+          return {
+            ...operator,
+            id: operator.idOperateur,
+            nivExp: nivExpText
+          };
+        }));
       } catch (error) {
         console.error("Erreur lors du chargement des opérateurs:", error);
       }
@@ -116,9 +138,11 @@ const OperatorList = () => {
         })
       }
     >
-      <MenuItem value="50%">50%</MenuItem>
-      <MenuItem value="100%">100%</MenuItem>
-      <MenuItem value="200%">200%</MenuItem>
+      <MenuItem value="1.2">Débutant</MenuItem>
+      <MenuItem value="1.1">Novice</MenuItem>
+      <MenuItem value="1">Normal</MenuItem>
+      <MenuItem value="0.9">Avancé</MenuItem>
+      <MenuItem value="0.8">Expert</MenuItem>
     </Select>
   ];
 

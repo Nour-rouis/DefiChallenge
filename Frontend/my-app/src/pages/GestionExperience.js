@@ -43,8 +43,9 @@ function GestionExperience() {
     const [newOperator, setNewOperator] = useState({
         nom: '',
         prenom: '',
-        nivExp: '50'
+        nivExp: '1'
     });
+
 
     const handleStartSequence = () => {
         setOpenOperatorModal(true);
@@ -313,9 +314,11 @@ function GestionExperience() {
                             label="Niveau d'expérience"
                             onChange={(e) => setNewOperator({ ...newOperator, nivExp: e.target.value })}
                         >
-                            <MenuItem value="50">50%</MenuItem>
-                            <MenuItem value="100">100%</MenuItem>
-                            <MenuItem value="200">200%</MenuItem>
+                            <MenuItem value="1.2">Débutant</MenuItem>
+                            <MenuItem value="1.1">Novice</MenuItem>
+                            <MenuItem value="1">Normal</MenuItem>
+                            <MenuItem value="0.9">Avancé</MenuItem>
+                            <MenuItem value="0.8">Expert</MenuItem>
                         </Select>
                     </FormControl>
                 ]}
