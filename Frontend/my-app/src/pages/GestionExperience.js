@@ -314,11 +314,11 @@ function GestionExperience() {
                             label="Niveau d'expérience"
                             onChange={(e) => setNewOperator({ ...newOperator, nivExp: e.target.value })}
                         >
-                            <MenuItem value="1.2">Débutant</MenuItem>
-                            <MenuItem value="1.1">Novice</MenuItem>
-                            <MenuItem value="1">Normal</MenuItem>
-                            <MenuItem value="0.9">Avancé</MenuItem>
-                            <MenuItem value="0.8">Expert</MenuItem>
+                            <MenuItem value="1.2">Débutant (120%)</MenuItem>
+                            <MenuItem value="1.1">Novice (110%)</MenuItem>
+                            <MenuItem value="1">Normal (100%)</MenuItem>
+                            <MenuItem value="0.9">Avancé (90%)</MenuItem>
+                            <MenuItem value="0.8">Expert (80%)</MenuItem>
                         </Select>
                     </FormControl>
                 ]}

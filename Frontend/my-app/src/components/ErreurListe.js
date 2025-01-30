@@ -19,6 +19,7 @@ const ErreurListe = () => {
 
     useEffect(() => {
         fetchErreurs();
+        // eslint-disable-next-line
     }, [idexp]);
 
     const validateTempsFormat = (temps) => {

@@ -383,11 +383,14 @@ def verification(idexp, idop, idtache, idraq):
         dateDebut = request.form['dateDebut']
         dateFin = request.form['dateFin']
         isErreur = request.form['isErreur']
+        kpis = request.form['kpis']
 
-        id = anaDao.create(idraq, idtache, dateDebut, dateFin, isErreur)
+        idtache = tacheDao.get_by_idOperateur(idop)[idtache-1]['idTache']
+
+        id = anaDao.create(idraq, idtache, dateDebut, dateFin, isErreur, kpis)
         return jsonify({
             'state' : 'success',
-            'message' : '[SUCCESS] Verification #' + str(id) + ' créée pour la raquette #' + str(idraq) + ' pour l\'opérateur #' + idop + ' dans l\'Experience #' + str(idexp) + '.'
+            'message' : '[SUCCESS] Verification #' + str(id) + ' créée pour la raquette #' + str(idraq) + ' pour l\'opérateur #' + str(idop) + ' dans l\'Experience #' + str(idexp) + '.'
         })
     
 @app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/raquettesrestantes", methods=['GET'])

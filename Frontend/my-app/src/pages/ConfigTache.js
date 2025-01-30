@@ -8,6 +8,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Button from '@mui/material/Button';
 import { getNbRaquetteErreur } from '../utils/RaquetteApi';
 import { createTache, getNbTacheParOperateur } from '../utils/tacheApi';
+import { getExperience } from '../utils/experienceApi';
 
 function valuetext(value) {
   return `${value}%`;
@@ -45,6 +46,10 @@ export default function ConfigTache() {
   const handleGetTaskNumber = async () => {
     try {
       const data = await getNbTacheParOperateur(idexp, idop);
+      const experience = await getExperience(idexp);
+      if (data == experience.nombreTache) {
+        navigate(`/experience/${idexp}/`);
+      }
       setNbTache(data + 1);
     } catch (error) {
       console.error('Erreur lors de la récupération du nombre de taches:', error);
@@ -71,6 +76,7 @@ export default function ConfigTache() {
   useEffect(() => {
     handleGetNbRaquetteErreur();
     handleGetTaskNumber();
+    // eslint-disable-next-line
   }, []);
 
   const marks = []
@@ -94,11 +100,8 @@ export default function ConfigTache() {
     for (let i = 0; i < keys.length; i++) {
       kpiAff.push(keys[i].split(' ')[0]);
     }
-    
-    let value = document.querySelector('.MuiSlider-valueLabel').textContent;
 
-    console.log(kpiAff.toString());
-    console.log(value);
+    let value = document.querySelector('.MuiSlider-valueLabel').textContent;
 
     handleCreateTache(value, kpiAff, idexp, idop);
     navigate(`/experience/${idexp}/operateur/${idop}/tache/${nbTache}/analyse`);

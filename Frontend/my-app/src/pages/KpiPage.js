@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import raquetteImage from '../assets/images/Bouton ressort monté a l_envers.jpeg';
 import {
     Container,
     Grid2 as Grid,
     Typography,
-    Button,
     Box,
     CircularProgress,
     Card,
@@ -17,8 +16,6 @@ import {
 import {
     Timer as TimerIcon,
     Warning as WarningIcon,
-    CheckCircle as CheckCircleIcon,
-    Delete as DeleteIcon
 } from '@mui/icons-material';
 import {
     getKpi1,
@@ -31,6 +28,8 @@ import {
 import { getRaquettes } from '../utils/RaquetteApi';
 import CloseIcon from '@mui/icons-material/Close';
 import { getVisibiliteKpi } from '../utils/tacheApi';
+import { createAnalyse } from '../utils/analyseApi';
+
 
 const KPI_LABELS = [
     'Temps cible',
@@ -47,6 +46,7 @@ const KPI_LABELS = [
 ];
 
 function KpiDashboard() {
+    const navigate = useNavigate();
     const { idexp, idop, idtac } = useParams();
 
     const [state, setState] = useState({
@@ -68,6 +68,7 @@ function KpiDashboard() {
         showRaquetteSection: false,
         scannerInput: '',
         raquetteName: '',
+        dateDebutScan: '',
         timer: 0,
         visibiliteKpi: [],
     });
@@ -78,28 +79,39 @@ function KpiDashboard() {
     const ERROR_TIMES = { T1: 2, T2: 3 };
     const ERROR_FREQUENCIES = { T1: 2, T2: 1 };
 
+    const handleFinish = async () => {
+        navigate(`/experience/${idexp}/operateur/${idop}/configtache`);
+    }
+
     const handleRepair = () => {
-        setTextSnackbar(`Vous venez de réparer ${state.raquetteName}`);
-
-        setRaquettes(prev => prev.map(raquette => {
-            if (raquette.nomRaquette === state.raquetteName) {
-                return { ...raquette, isScanned: true }
+        setState(prevState => {
+            const analyseData = {
+                dateDebut: prevState.dateDebutScan,
+                dateFin: new Date().toISOString(),
+                isErreur: 1,
+                kpis: prevState.kpiData
             }
+            createAnalyse(idexp, idop, idtac, raquettes.find(r => r.nomRaquette === prevState.raquetteName).idRaquette, analyseData);
+            setTextSnackbar(`Vous venez de réparer ${prevState.raquetteName}`);
 
-            return raquette
-        }
-        ));
+            setRaquettes(prev => prev.map(raquette => {
+                if (raquette.nomRaquette === prevState.raquetteName) {
+                    return { ...raquette, isScanned: true }
+                }
 
-        setState(prev => {
-            const newKpi2 = parseInt(prev.kpiData.kpi2) + 1;
+                return raquette
+            }
+            ));
+
+            const newKpi2 = parseInt(prevState.kpiData.kpi2) + 1;
             const kpi4 = (100 * newKpi2) / 30;
             const tempsObjectif = calculateObjectiveTime();
-            const kpi5Value = ((100 * tempsObjectif) / parseInt(prev.kpiData.kpi3)).toFixed(2);
+            const kpi5Value = ((100 * tempsObjectif) / parseInt(prevState.kpiData.kpi3)).toFixed(2);
 
             return {
-                ...prev,
+                ...prevState,
                 kpiData: {
-                    ...prev.kpiData,
+                    ...prevState.kpiData,
                     kpi2: newKpi2.toString(),
                     kpi4: `${kpi4.toFixed(2)}%`,
                     kpi5: kpi5Value
@@ -115,45 +127,60 @@ function KpiDashboard() {
     };
 
     const handleValidate = () => {
-        setTextSnackbar(`Vous venez de valider ${state.raquetteName}`);
-        setRaquettes(prev => prev.map(raquette => {
-            console.log(state.raquetteName)
-            if (raquette.nomRaquette === state.raquetteName) {
-                console.log('bite')
-                return { ...raquette, isScanned: true }
+        setState(prevState => {
+            const analyseData = {
+                dateDebut: prevState.dateDebutScan,
+                dateFin: new Date().toISOString(),
+                isErreur: 0,
+                kpis: prevState.kpiData
             }
+            createAnalyse(idexp, idop, idtac, raquettes.find(r => r.nomRaquette === prevState.raquetteName).idRaquette, analyseData);
+            setTextSnackbar(`Vous venez de valider ${prevState.raquetteName}`);
+            setRaquettes(prev => prev.map(raquette => {
+                if (raquette.nomRaquette === prevState.raquetteName) {
+                    return { ...raquette, isScanned: true }
+                }
 
-            return raquette
-        }
-        ));
-
-        setState(prevState => ({
-            ...prevState,
-            showRaquetteSection: false,
-            raquetteName: '',
-        }));
+                return raquette
+            }
+            ));
+            return {
+                ...prevState,
+                showRaquetteSection: false,
+                raquetteName: '',
+            }
+        });
     };
 
     const handleThrowAway = () => {
-        setTextSnackbar(`Vous venez de jeter ${state.raquetteName}`);
+        setState(prevState => {
+            const analyseData = {
+                dateDebut: prevState.dateDebutScan,
+                dateFin: new Date().toISOString(),
+                isErreur: 2,
+                kpis: prevState.kpiData
+            }
+            createAnalyse(idexp, idop, idtac, raquettes.find(r => r.nomRaquette === prevState.raquetteName).idRaquette, analyseData);
+            setTextSnackbar(`Vous venez de jeter ${prevState.raquetteName}`);
 
-        setRaquettes(prevRaquettes =>
-            prevRaquettes.map(raquette =>
-                raquette.nomRaquette === state.raquetteName
-                    ? { ...raquette, isScanned: true }
-                    : raquette
-            )
-        );
+            setRaquettes(prevRaquettes =>
+                prevRaquettes.map(raquette =>
+                    raquette.nomRaquette === prevState.raquetteName
+                        ? { ...raquette, isScanned: true }
+                        : raquette
+                )
+            );
+            return {
 
-        setState(prev => ({
-            ...prev,
-            kpiData: {
-                ...prev.kpiData,
-                kpi6: (parseInt(prev.kpiData.kpi6) + 1).toString()
-            },
-            showRaquetteSection: false,
-            raquetteName: '',
-        }));
+                ...prevState,
+                kpiData: {
+                    ...prevState.kpiData,
+                    kpi6: (parseInt(prevState.kpiData.kpi6) + 1).toString()
+                },
+                showRaquetteSection: false,
+                raquetteName: '',
+            }
+        });
     };
 
     const calculateObjectiveTime = () => {
@@ -185,14 +212,14 @@ function KpiDashboard() {
                             if (raquette) {
                                 if (raquette.isScanned) {
                                     setTextSnackbar(`La raquette ${currentState.scannerInput} a déjà été scannée`);
-                                    return { ...currentState, scannerInput: '' };
+                                    return { ...currentState, scannerInput: ''};
                                 } else {
-                                    console.log(raquette)
                                     return {
                                         ...currentState,
                                         showRaquetteSection: true,
                                         raquetteName: currentState.scannerInput,
-                                        scannerInput: ''
+                                        scannerInput: '',
+                                        dateDebutScan:new Date().toISOString()
                                     };
                                 }
                             } else {
@@ -222,8 +249,16 @@ function KpiDashboard() {
             }
         };
 
+        const raquettesNotScanned = raquettes.filter(raquette => !raquette.isScanned);
+
+        if (raquettesNotScanned.length === 0 && !state.loading && !state.error) {
+            handleFinish();
+        }
+
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
+
+        // eslint-disable-next-line
     }, [raquettes]);
 
     useEffect(() => {
@@ -260,6 +295,7 @@ function KpiDashboard() {
         };
 
         initializeData();
+        // eslint-disable-next-line
     }, [idexp, idop, idtac]);
     useEffect(() => {
         const handleUpdateKpiData = async () => {
@@ -318,6 +354,7 @@ function KpiDashboard() {
         };
 
         handleUpdateKpiData();
+        // eslint-disable-next-line
     }, [state.raquetteName, idexp, idop, idtac, raquettes]);
 
     useEffect(() => {
@@ -339,6 +376,7 @@ function KpiDashboard() {
             }, 1000);
         }
         return () => clearInterval(interval);
+        // eslint-disable-next-line
     }, [state.showRaquetteSection]);
 
     if (state.loading) {
@@ -376,40 +414,6 @@ function KpiDashboard() {
             ) : (
                 <>
                     <Grid container width={"100%"} justifyContent={"space-around"}>
-
-                        {/* <Grid item xs={12} md={6} sx={{ display: 'flex' }} width={"45%"}>
-                                        <Card sx={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
-                                            <CardHeader title="Actions" />
-                                            <CardContent sx={{
-                                                flexGrow: 1,
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                gap: 2,
-                                                justifyContent: 'center'
-                                            }}>
-                                                <Button
-                                                    variant="contained"
-                                                    color="primary"
-                                                    startIcon={<CheckCircleIcon />}
-                                                    onClick={handleRepair}
-                                                    fullWidth
-                                                >
-                                                    Valider
-                                                </Button>
-                                                <Button
-                                                    variant="contained"
-                                                    color="error"
-                                                    startIcon={<DeleteIcon />}
-                                                    onClick={handleThrowAway}
-                                                    fullWidth
-                                                >
-                                                    Erreur détectée
-                                                </Button>
-                                            </CardContent>
-                                        </Card>
-                                    </Grid> */}
-
-
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                             <TimerIcon sx={{ fontSize: 30 }} />
                             <Typography variant="h4">

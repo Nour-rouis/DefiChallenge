@@ -57,6 +57,7 @@ const OperatorList = () => {
     if (idexp) {
       fetchOperators();
     }
+    // eslint-disable-next-line
   }, [idexp]);
 
   const handleDelete = async (operatorId) => {
