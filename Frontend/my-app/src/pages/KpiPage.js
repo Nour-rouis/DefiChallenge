@@ -3,20 +3,21 @@ import { Container, Grid, Paper, Typography, Button, Box, CircularProgress, Text
 import raquetteImage from '../assets/images/Bouton ressort monté a l_envers.jpeg';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getKpi5, getKpi1, getKpi10 } from '../utils/kpiApi';
+import * as XLSX from 'xlsx'; // Import the xlsx library
 
 const KpiPage = () => {
     const [kpiData, setKpiData] = useState({
-        kpi1: '10', // Initialize with default values
+        kpi1: '10',
         kpi2: '0',
         kpi3: '0s',
         kpi4: '0%',
         kpi5: '0',
         kpi6: '0',
-        kpi7: '0', // kpi10 + kpi6
-        kpi8: '0', // 100*(KPI2-KPI7)/KPI2
-        kpi9: '10', // Affichage/prédiction du temps de réparation
-        kpi10: '0', // from API error non detected
-        kpi11: '0', // KPI1-KPI3
+        kpi7: '0',
+        kpi8: '0',
+        kpi9: '10',
+        kpi10: '0',
+        kpi11: '0',
     });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -25,18 +26,37 @@ const KpiPage = () => {
     const [raquetteName, setRaquetteName] = useState('');
     const [timer, setTimer] = useState(0);
     const [repairTime, setRepairTime] = useState(0);
-    const [kpi5, setKpi5] = useState('0'); // Initialize with default value
-    const [kpi1, setKpi1] = useState('0'); // Initialize with default value
-    const [kpi10, setKpi10] = useState('0'); // Initialize with default value
+    const [kpi5, setKpi5] = useState('0');
+    const [kpi1, setKpi1] = useState('0');
+    const [kpi10, setKpi10] = useState('0');
     const navigate = useNavigate();
     const { idexp } = useParams();
+
+    // Function to export KPI data to Excel
+    const exportToExcel = () => {
+        // Convert kpiData object to an array of objects
+        const data = Object.entries(kpiData).map(([key, value]) => ({
+            KPI: key,
+            Value: value,
+        }));
+
+        // Create a worksheet
+        const worksheet = XLSX.utils.json_to_sheet(data);
+
+        // Create a workbook
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'KPI Data');
+
+        // Generate Excel file and trigger download
+        XLSX.writeFile(workbook, 'KPI_Data.xlsx');
+    };
 
     useEffect(() => {
         const fetchKpi5 = async () => {
             try {
                 setLoading(true);
                 const fetchedKpi5 = await getKpi5(idexp);
-                setKpi5(fetchedKpi5 || '0'); // Fallback to '0' if undefined
+                setKpi5(fetchedKpi5 || '0');
             } catch (error) {
                 console.error('Error fetching KPI5:', error);
                 setError('Failed to load KPI5');
@@ -49,7 +69,7 @@ const KpiPage = () => {
             try {
                 setLoading(true);
                 const fetchedKpi1 = await getKpi1(idexp);
-                setKpi1(fetchedKpi1 || '0'); // Fallback to '0' if undefined
+                setKpi1(fetchedKpi1 || '0');
             } catch (error) {
                 console.error('Error fetching KPI1:', error);
                 setError('Failed to load KPI1');
@@ -62,7 +82,7 @@ const KpiPage = () => {
             try {
                 setLoading(true);
                 const fetchedKpi10 = await getKpi10(idexp);
-                setKpi10(fetchedKpi10 || '0'); // Fallback to '0' if undefined
+                setKpi10(fetchedKpi10 || '0');
             } catch (error) {
                 console.error('Error fetching KPI10:', error);
                 setError('Failed to load KPI10');
@@ -79,7 +99,6 @@ const KpiPage = () => {
     }, [idexp]);
 
     useEffect(() => {
-        // Ensure kpi5, kpi1, and kpi10 are defined before updating kpiData
         if (kpi5 !== null && kpi1 !== null && kpi10 !== null) {
             setKpiData((prevKpiData) => ({
                 ...prevKpiData,
@@ -262,6 +281,9 @@ const KpiPage = () => {
                                 </Button>
                                 <Button variant="contained" color="success" onClick={handleNextRaquette}>
                                     Raquette Suivante
+                                </Button>
+                                <Button variant="contained" color="info" onClick={exportToExcel}>
+                                    Exporter les KPI en Excel
                                 </Button>
                             </Box>
                         </Paper>
