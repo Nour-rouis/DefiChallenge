@@ -15,8 +15,8 @@ export const createRaquette = async (raquette, id) => {
   }
 }
 
-export const getRaquettes = async (id) => {
-    const response = await fetch(`${API_URL}/experience/${id}/raquettes`);
+export const getRaquettes = async (idExp) => {
+    const response = await fetch(`${API_URL}/experience/${idExp}/raquettes`);
     if (!response.ok) {
         throw new Error(`Failed to get raquette: ${response.statusText}`);
     }

@@ -14,7 +14,7 @@ export default function Navbar() {
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Réparation de raquettes
+            Time to fix
           </Typography>
           <Button color="inherit" onClick={() => navigate('/')} startIcon={<HomeIcon />}>Accueil</Button>
         </Toolbar>

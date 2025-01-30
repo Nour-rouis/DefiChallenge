@@ -416,6 +416,13 @@ def getErreurAffiche(idexp, idop, idtache):
         raqsAAffiche = random.sample(idRaqErreursAAffiche, iaNbErreur)
         return jsonify(raqsAAffiche)
 
+@app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/getVisibiliteKpi", methods=['GET'])
+def getVisibiliteKpi(idexp, idop, idtache):
+    if request.method == "GET":
+        visibiliteKpi = tacheDao.get_by_idOperateur(idop)
+        visibiliteKpi = visibiliteKpi[idtache-1]['visibiliteKpi']
+        return jsonify({'visibiliteKpi': visibiliteKpi})
+
 # --- KPIS --- #
 
 @app.route('/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/tempscible', methods=['GET'])
@@ -508,7 +515,7 @@ def tempsReparation(idexp, idop, idtache, idraquette):
         op = opDao.get_by_id(idop)
         
         tempsReparation = "00:00"
-        if raquette['idErreur'] != None:
+        if raquette['idErreur'] != 'null':
             tempsReparation = multiply_times(erreur['tempsDefaut'], op['nivExp'])
         
         return jsonify({'tempsReparation': tempsReparation}), 200
