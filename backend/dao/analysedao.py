@@ -18,7 +18,8 @@ def get_all():
                          "idTache": row[1], 
                          "dateDebut": row[2], 
                          "dateFin": row[3], 
-                         "isErreur": row[4]})
+                         "isErreur": row[4],
+                         "kpis": row[5]})
     return analyses
 
 def get_by_ids(idRaquette, idTache):
@@ -42,31 +43,32 @@ def get_by_ids(idRaquette, idTache):
             "idTache": row[1], 
             "dateDebut": row[2], 
             "dateFin": row[3], 
-            "isErreur": row[4]}
+            "isErreur": row[4],
+            "kpis": row[5]}
 
-def create(idRaquette, idTache, dateDebut, dateFin, isErreur):
+def create(idRaquette, idTache, dateDebut, dateFin, isErreur, kpis):
     """
     Crée un nouvel enregistrement dans la table analyse.
     
     Args:
-        idRaquette (int): L'identifiant de la raquette utilisée.
-        idTache (int): L'identifiant de la tâche effectuée.
+        idRaquette (str): L'identifiant de la raquette.
+        idTache (int): L'identifiant de la tâche.
         dateDebut (str): La date de début de l'analyse.
         dateFin (str): La date de fin de l'analyse.
-        isErreur (bool): Indique si l'analyse a généré une erreur.
+        isErreur (int): L'indicateur d'erreur.
+        kpis (str): Les KPIs sérialisés en JSON.
     
     Returns:
-        int: L'identifiant de l'enregistrement créé.
+        tuple: L'identifiant de l'enregistrement créé.
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO analyse (idRaquette, idTache, dateDebut, dateFin, isErreur) VALUES (?, ?, ?, ?, ?)', 
-                   (idRaquette, idTache, dateDebut, dateFin, isErreur))
+    cursor.execute(
+        'INSERT INTO analyse (idRaquette, idTache, dateDebut, dateFin, isErreur, kpis) VALUES (?, ?, ?, ?, ?, ?)',
+        (idRaquette, idTache, dateDebut, dateFin, isErreur, kpis)
+    )
     conn.commit()
-    id = cursor.lastrowid
     conn.close()
-    print("[DATABASE] Nouvelle Analyse #", id)
-    return id
 
 def update(idRaquette, idTache, dateDebut, dateFin, isErreur):
     """
@@ -125,5 +127,6 @@ def get_by_idTache(idTache):
                          "idTache": row[1], 
                          "dateDebut": row[2], 
                          "dateFin": row[3], 
-                         "isErreur": row[4]})
+                         "isErreur": row[4],
+                         "kpis": row[5]})
     return analyses

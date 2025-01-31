@@ -16,7 +16,6 @@ const AppRouter = () => {
         <Route path="/" element={<Home />} />
         <Route path="/users" element={<Users />} />
         <Route path="/experience/:idexp">
-        <Route path="/experience/:idexp/kpi" element={<KpiPage />} />
           <Route index element={<GestionExperience />} />
           <Route path="raquettes" element={<RaquetteListe />} />
           <Route path="raquettes/erreurs" element={<ErreurListe />} />

@@ -1,6 +1,7 @@
 import os
 import random
-from flask import Flask, jsonify, request, send_file
+from pandas import DataFrame
+from flask import Flask, jsonify, request, send_file, send_from_directory
 from flask_cors import CORS
 from connexion import get_db_connection
 import dao.experiencedao as expDao
@@ -16,6 +17,96 @@ app = Flask(__name__)
 CORS(app)
 
 conn = get_db_connection()
+
+@app.route('/images/<path:filename>')
+def serve_image(filename):
+    return send_from_directory(imagesFolder, filename)
+
+def add_times(time1, time2):
+    """
+    Adds two times. (mm:ss)
+
+    Args:
+        time1 (str): The first time.
+        time2 (str): The second time.
+
+    Returns:
+        str: The sum of the two times.
+    """
+    time1 = time1.split(":")
+    time2 = time2.split(":")
+    minutes = int(time1[0]) + int(time2[0])
+    seconds = int(time1[1]) + int(time2[1])
+    if seconds >= 60:
+        minutes += 1
+        seconds -= 60
+    return str(minutes) + ":" + str(seconds).zfill(2)
+
+def subtract_times(time1, time2):
+    """
+    Subtracts two times. (mm:ss)
+
+    Args:
+        time1 (str): The first time.
+        time2 (str): The second time.
+
+    Returns:
+        str: The difference between the two times.
+    """
+    time1 = time1.split(":")
+    time2 = time2.split(":")
+    minutes = int(time1[0]) - int(time2[0])
+    seconds = int(time1[1]) - int(time2[1])
+    if seconds < 0:
+        minutes -= 1
+        seconds += 60
+    return str(minutes) + ":" + str(seconds).zfill(2)
+
+
+def timeToFloat(time):
+    """
+    Convert a time (mm:ss) to a float (minutes).
+
+    Args:
+        time (str): The time to convert.
+
+    Returns:
+        float: The time in minutes.
+    """
+    time = time.split(":")
+    return int(time[0]) + int(time[1]) / 60
+
+def floatToTime(time):
+    """
+    Convert a float (minutes) to a time (mm:ss).
+
+    Args:
+        time (float): The time to convert.
+
+    Returns:
+        str: The time in mm:ss format.
+    """
+    minutes = int(time)
+    seconds = int((time - minutes) * 60)
+    return str(minutes) + ":" + str(seconds).zfill(2)
+
+def multiply_times(time, factor):
+  """
+  Multiplie une durée au format "mm:ss" par un facteur réel.
+
+  Args:
+    time: La durée au format "mm:ss".
+    factor: Le facteur de multiplication.
+
+  Returns:
+    La durée multipliée, au format "mm:ss".
+  """
+  minutes, seconds = map(int, time.split(':'))
+  total_seconds = minutes * 60 + seconds
+  new_total_seconds = int(total_seconds * factor)
+  new_minutes, new_seconds = divmod(new_total_seconds, 60)
+  return f"{new_minutes:02d}:{new_seconds:02d}"
+
 
 # --- PAGE ACCUEIL --- #
 
@@ -297,11 +388,14 @@ def verification(idexp, idop, idtache, idraq):
         dateDebut = request.form['dateDebut']
         dateFin = request.form['dateFin']
         isErreur = request.form['isErreur']
+        kpis = request.form['kpis']
 
-        id = anaDao.create(idraq, idtache, dateDebut, dateFin, isErreur)
+        idtache = tacheDao.get_by_idOperateur(idop)[idtache-1]['idTache']
+
+        id = anaDao.create(idraq, idtache, dateDebut, dateFin, isErreur, kpis)
         return jsonify({
             'state' : 'success',
-            'message' : '[SUCCESS] Verification #' + str(id) + ' créée pour la raquette #' + str(idraq) + ' pour l\'opérateur #' + idop + ' dans l\'Experience #' + str(idexp) + '.'
+            'message' : '[SUCCESS] Verification #' + str(id) + ' créée pour la raquette #' + str(idraq) + ' pour l\'opérateur #' + str(idop) + ' dans l\'Experience #' + str(idexp) + '.'
         })
     
 @app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/raquettesrestantes", methods=['GET'])
@@ -319,68 +413,145 @@ def erreurImage(idexp, iderr):
 @app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/getErreurAffiche", methods=['GET'])
 def getErreurAffiche(idexp, idop, idtache):
     if request.method == "GET":
-        erreurs = raqDao.get_raquette_with_error(idexp)
-        idErreurs = []
-        for erreur in erreurs:
-            idErreurs.append(erreur['idErreur'])
+        raqsWithErreurs = raqDao.get_raquette_with_error(idexp)
+        print(raqsWithErreurs)
+        idRaqErreursAAffiche = []
+        for raqWithErreurs in raqsWithErreurs:
+            idRaqErreursAAffiche.append(raqWithErreurs['idRaquette'])
 
-        iaNbErreur = tacheDao.get_by_id(idtache)['iaNbErreurDetecte']
-        random.seed(iaNbErreur)
-        errAffiche = random.sample(idErreurs, iaNbErreur)
-        return jsonify(errAffiche)
+        iaNbErreur = tacheDao.get_by_id(tacheDao.get_by_idOperateur(idop)[idtache-1]['idTache'])['iaNbErreurDetecte']
+        random.seed(iaNbErreur + idexp)
+        raqsAAffiche = random.sample(idRaqErreursAAffiche, iaNbErreur)
+        return jsonify(raqsAAffiche)
+
+@app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/getVisibiliteKpi", methods=['GET'])
+def getVisibiliteKpi(idexp, idop, idtache):
+    if request.method == "GET":
+        visibiliteKpi = tacheDao.get_by_idOperateur(idop)
+        visibiliteKpi = visibiliteKpi[idtache-1]['visibiliteKpi']
+        return jsonify({'visibiliteKpi': visibiliteKpi})
 
 # --- KPIS --- #
 
-@app.route('/experience/<int:idexp>/getkpi1', methods=['GET'])
-def getKpi1(idexp):
+@app.route('/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/tempscible', methods=['GET'])
+@app.route('/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/getkpi1', methods=['GET'])
+def getKpi1(idexp, idop, idtache):
     if request.method == "GET":
-        # Fetch experience data
         exp = expDao.get_by_id(idexp)
         if not exp:
             return jsonify({'state': 'error', 'message': 'Experience not found'}), 404
 
         Tmoy = exp['Tmoy']
         option = exp['option']
+        nbRaquette = raqDao.count_by_idExperience(idexp)['count']
+        nbErreur = raqDao.count_errors_by_idExperience(idexp)['count']
 
-        # Fetch error data for T_values
+        raquettesWithErrors = raqDao.get_raquette_with_error(idexp)
         errors = errDao.get_by_idExperience(idexp)
+
+        sommeTErreur = "00:00"
+        for raquette in raquettesWithErrors:
+            for error in errors:
+                if error['idErreur'] == raquette['idErreur']:
+                    sommeTErreur = add_times(sommeTErreur, error['tempsDefaut'])
+                    break
+        
         T_values = {}
         for error in errors:
-            T_values[error['id']] = error['tempsDefaut']
+            T_values[error['idErreur']] = error['tempsDefaut']
 
-        # Fetch operator data for Xp_values
-        ops = opDao.get_by_idExperience(idexp)
-        Xp_values = {}
-        for op in ops:
-            Xp_values[op['id']] = int(op['nivExp'])  # Ensure that 'nivExp' is treated as an integer
+        op = opDao.get_by_id(idop)
+        Tc = "00:00"
 
-        # Calculate Tc based on the option
         try:
             if option == 'A':
                 Tc = Tmoy
             elif option == 'B':
-                Tc = Tmoy * (30 / 24)
+                Tc = multiply_times(Tmoy, (nbRaquette / (nbRaquette - nbErreur)))
             elif option == 'C':
-                Tc = Tmoy + sum(T_values.values())
+                Tc = add_times(Tmoy, sommeTErreur) # OK
             elif option == 'D':
-                Tc = Tmoy * sum(Xp_values.values())  # Sum of the operator levels
+                Tc = multiply_times(Tmoy, op['nivExp'])
             elif option == 'E':
-                Tc = (Tmoy * (30 / 24)) * sum(Xp_values.values())  # Multiply by sum of operator levels
+                Tc = multiply_times(Tmoy, (nbRaquette / (nbRaquette - nbErreur) * op['nivExp']))
             elif option == 'F':
-                Tc = (Tmoy + sum(T_values.values())) * sum(Xp_values.values())  # Add T_values sum and multiply by operator levels
+                Tc = multiply_times(add_times(Tmoy, sommeTErreur), op['nivExp'])
             else:
                 return jsonify({'state': 'error', 'message': '[ERROR] Option invalide.'}), 400
 
             # KPI1 -> Temps cible
             kpi1 = Tc
-            return jsonify({'kpi1': kpi1}), 200
+            return jsonify({'tempsCible': kpi1}), 200
 
         except Exception as e:
             return jsonify({'state': 'error', 'message': str(e)}), 500
         
+# Nombres de raquettes controlées dans la tache (KPI2)
+@app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/raquettescontrolees", methods=['GET'])
+@app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/getkpi2", methods=['GET'])
+def raquettesControlees(idexp, idop, idtache):
+    if request.method == "GET":
+        idtache = tacheDao.get_by_idOperateur(idop)[idtache-1]['idTache']
+        nbRaquettesControlees = len(anaDao.get_by_idTache(idtache))
+        return jsonify({'nbRaquettesControlees': nbRaquettesControlees}), 200
+    
+# Nombre de raquettes jetees (KPI6)
+@app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/raquettesjetees", methods=['GET'])
+@app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/getkpi6", methods=['GET'])
+def raquettesJetees(idexp, idop, idtache):
+    if request.method == "GET":
+        idtache = tacheDao.get_by_idOperateur(idop)[idtache-1]['idTache']
+        raquettes = raqDao.get_by_idExperience(idexp)
+        analyses = anaDao.get_by_idTache(idtache)
+
+        raquettesJetees = 0
+
+        for r in raquettes:
+            if r['idErreur'] != "null":
+                for a in analyses:
+                    if a['idRaquette'] == r['idRaquette']:
+                        if a['isErreur'] == 2:
+                            raquettesJetees += 1
+        
+        return jsonify({'raquettesJetees': raquettesJetees}), 200
+    
+# Temps de réparation en fonction de l'expertise de l'opérateur (KPI9)
+@app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/analyse/<int:idraquette>/tempsreparation", methods=['GET'])
+@app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/analyse/<int:idraquette>/getkpi9", methods=['GET'])
+def tempsReparation(idexp, idop, idtache, idraquette):
+    if request.method == "GET":
+        raquette = raqDao.get_by_id(idraquette)
+        erreur = errDao.get_by_id(raquette['idErreur'])
+        op = opDao.get_by_id(idop)
+        
+        tempsReparation = "00:00"
+        if raquette['idErreur'] != 'null':
+            tempsReparation = multiply_times(erreur['tempsDefaut'], op['nivExp'])
+        
+        return jsonify({'tempsReparation': tempsReparation}), 200
+
+# Somme des erreurs non détectées (KPI10)
+@app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/erreursnondetectees", methods=['GET'])
+@app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/getkpi10", methods=['GET'])
+def erreursNonDetectees(idexp, idop, idtache):
+    if request.method == "GET":
+        idtache = tacheDao.get_by_idOperateur(idop)[idtache-1]['idTache']
+        raquettes = raqDao.get_by_idExperience(idexp)
+        analyses = anaDao.get_by_idTache(idtache)
+
+        erreursNonDetectees = 0
+
+        for r in raquettes:
+            if r['idErreur'] != "null":
+                for a in analyses:
+                    if a['idRaquette'] == r['idRaquette']:
+                        if a['isErreur'] == 0:
+                            erreursNonDetectees += 1
+        
+        return jsonify({'erreursNonDetectees': erreursNonDetectees}), 200
 # This is gonna calculate "tempsObjectifDuMoment" and not the KPI5 !!
-@app.route('/experience/<int:idexp>/get_kpi5', methods=['GET'])
-def get_kpi5(idexp):
+@app.route('/experience/<int:idexp>/getkpi5', methods=['GET'])
+def getkpi5(idexp):
     if request.method == "GET":
         # Fetch experience data
         exp = expDao.get_by_id(idexp)
@@ -396,10 +567,10 @@ def get_kpi5(idexp):
             return jsonify({'state': 'error', 'message': 'No errors found for this experience'}), 404
 
         # Initialize T_values (tempsDefaut for each error)
-        error_times = {error['id']: float(error['tempsDefaut']) for error in errors}
+        error_times = {error['idErreur']: int(error['tempsDefaut'].split(':')[0]) * 60 + int(error['tempsDefaut'].split(':')[1]) for error in errors}
 
         # Initialize frequency dictionary
-        error_frequencies = {error['id']: 0 for error in errors}
+        error_frequencies = {error['idErreur']: 0 for error in errors}
 
         # Fetch raquette data to count occurrences of each error
         raquettes = raqDao.get_by_idExperience(idexp)
@@ -442,6 +613,21 @@ def get_kpi10(idexp):  # Add 'idexp' as a parameter
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/export", methods=['GET'])
+def exportToCsv(idexp, idop, idtache):
+    if request.method == "GET":
+        idtachedeop = idtache
+        idtache = tacheDao.get_by_idOperateur(idop)[idtache-1]['idTache']
+        analyses = anaDao.get_by_idTache(idtache)
+        op = opDao.get_by_id(idop)
+        filename = "export_" + op['nom'] + "_" + op['prenom'] + "_" + str(idtache) + ".csv"
+        with open(filename, 'w') as file:
+            file.write("idRaquette;dateDebut;dateFin;isErreur;kpi1;kpi2;kpi3;kpi4;kpi5;kpi6;kpi7;kpi8;kpi9;kpi10;kpi11\n")
+            for analyse in analyses:
+                analyse['kpis'] = eval(analyse['kpis'])
+                file.write(str(analyse['idRaquette']) + ";" + analyse['dateDebut'] + ";" + analyse['dateFin'] + ";" + str(analyse['isErreur']) + ";" + str(analyse['kpis']['kpi1']) + ";" + str(analyse['kpis']['kpi2']) + ";" + str(analyse['kpis']['kpi3']) + ";" + str(analyse['kpis']['kpi4']) + ";" + str(analyse['kpis']['kpi5']) + ";" + str(analyse['kpis']['kpi6']) + ";" + str(analyse['kpis']['kpi7']) + ";" + str(analyse['kpis']['kpi8']) + ";" + str(analyse['kpis']['kpi9']) + ";" + str(analyse['kpis']['kpi10']) + ";" + str(analyse['kpis']['kpi11']) +"\n")
+        return send_file(filename, as_attachment=True)
 
 # import json
 # import os

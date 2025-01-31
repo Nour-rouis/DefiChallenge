@@ -1,183 +1,195 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Grid, Paper, Typography, Button, Box, CircularProgress, TextField } from '@mui/material';
-import raquetteImage from '../assets/images/Bouton ressort monté a l_envers.jpeg';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getKpi5, getKpi1, getKpi10 } from '../utils/kpiApi';
-import * as XLSX from 'xlsx'; // Import the xlsx library
+import {
+    Container,
+    Grid2 as Grid,
+    Typography,
+    Box,
+    CircularProgress,
+    Card,
+    CardContent,
+    CardHeader,
+    Snackbar,
+    IconButton,
+} from '@mui/material';
+import {
+    Timer as TimerIcon,
+    Warning as WarningIcon,
+} from '@mui/icons-material';
+import {
+    getKpi1,
+    getKpi2,
+    getKpi9,
+    getKpi10,
+    getNombreRaquettes,
+    getKpi5
+} from '../utils/kpiApi';
+import { getRaquettes } from '../utils/RaquetteApi';
+import CloseIcon from '@mui/icons-material/Close';
+import { getErreurToShow, getVisibiliteKpi } from '../utils/tacheApi';
+import { createAnalyse } from '../utils/analyseApi';
+import { getErreurs, getImageByPath } from '../utils/erreurApi';
+import errorImage from '../assets/images/AucuneErreur.jpeg';
 
-const KpiPage = () => {
-    const [kpiData, setKpiData] = useState({
-        kpi1: '10',
-        kpi2: '0',
-        kpi3: '0s',
-        kpi4: '0%',
-        kpi5: '0',
-        kpi6: '0',
-        kpi7: '0',
-        kpi8: '0',
-        kpi9: '10',
-        kpi10: '0',
-        kpi11: '0',
-    });
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [showRaquetteSection, setShowRaquetteSection] = useState(false);
-    const [scannerInput, setScannerInput] = useState('');
-    const [raquetteName, setRaquetteName] = useState('');
-    const [timer, setTimer] = useState(0);
-    const [repairTime, setRepairTime] = useState(0);
-    const [kpi5, setKpi5] = useState('0');
-    const [kpi1, setKpi1] = useState('0');
-    const [kpi10, setKpi10] = useState('0');
+const KPI_LABELS = [
+    'Temps cible',
+    'Nombre de raquettes contrôlées',
+    'Temps écoulé',
+    'Taux d\'avancement',
+    'Productivité à l\'instant t',
+    'Nombre de produits jetés',
+    'Nombre de non conformités',
+    'Taux de qualité',
+    'Prédiction du temps de réparation',
+    'Nombre d\'erreurs loupées',
+    'Temps restant',
+];
+
+function KpiDashboard() {
     const navigate = useNavigate();
-    const { idexp } = useParams();
+    const { idexp, idop, idtac } = useParams();
 
-    // Function to export KPI data to Excel
-    const exportToExcel = () => {
-        // Convert kpiData object to an array of objects
-        const data = Object.entries(kpiData).map(([key, value]) => ({
-            KPI: key,
-            Value: value,
-        }));
+    const [state, setState] = useState({
+        kpiData: {
+            kpi1: 'Loading...',
+            kpi2: 'Loading...',
+            kpi3: '0s',
+            kpi4: 'Loading...',
+            kpi5: 'Loading...',
+            kpi6: '0',
+            kpi7: 'Loading...',
+            kpi8: 'Loading...',
+            kpi9: 'Loading...',
+            kpi10: 'Loading...',
+            kpi11: 'Loading...'
+        },
+        loading: true,
+        error: null,
+        showRaquetteSection: false,
+        scannerInput: '',
+        raquetteName: '',
+        dateDebutScan: '',
+        reamingTime: 0,
+        timer: 0,
+        visibiliteKpi: [],
+        kpi1Value: '',
+    });
 
-        // Create a worksheet
-        const worksheet = XLSX.utils.json_to_sheet(data);
+    const [raquettes, setRaquettes] = useState([]);
+    const [textSnackbar, setTextSnackbar] = useState('');
+    const TIME_CYCLE = 10;
+    const ERROR_TIMES = { T1: 2, T2: 3 };
+    const ERROR_FREQUENCIES = { T1: 2, T2: 1 };
 
-        // Create a workbook
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'KPI Data');
-
-        // Generate Excel file and trigger download
-        XLSX.writeFile(workbook, 'KPI_Data.xlsx');
-    };
-
-    useEffect(() => {
-        const fetchKpi5 = async () => {
-            try {
-                setLoading(true);
-                const fetchedKpi5 = await getKpi5(idexp);
-                setKpi5(fetchedKpi5 || '0');
-            } catch (error) {
-                console.error('Error fetching KPI5:', error);
-                setError('Failed to load KPI5');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        const fetchKpi1 = async () => {
-            try {
-                setLoading(true);
-                const fetchedKpi1 = await getKpi1(idexp);
-                setKpi1(fetchedKpi1 || '0');
-            } catch (error) {
-                console.error('Error fetching KPI1:', error);
-                setError('Failed to load KPI1');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        const fetchKpi10 = async () => {
-            try {
-                setLoading(true);
-                const fetchedKpi10 = await getKpi10(idexp);
-                setKpi10(fetchedKpi10 || '0');
-            } catch (error) {
-                console.error('Error fetching KPI10:', error);
-                setError('Failed to load KPI10');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (idexp) {
-            fetchKpi5();
-            fetchKpi1();
-            fetchKpi10();
-        }
-    }, [idexp]);
-
-    useEffect(() => {
-        if (kpi5 !== null && kpi1 !== null && kpi10 !== null) {
-            setKpiData((prevKpiData) => ({
-                ...prevKpiData,
-                kpi1: kpi1.toString(),
-                kpi5: kpi5.toString(),
-                kpi10: kpi10.toString(),
-                kpi7: (parseInt(kpi10) + parseInt(prevKpiData.kpi6)).toString(),
-                kpi8: ((100 * (parseInt(prevKpiData.kpi2) - (parseInt(kpi10) + parseInt(prevKpiData.kpi6))) / parseInt(prevKpiData.kpi2)).toFixed(2) + '%'),
-                kpi11: (parseInt(kpi1) - parseInt(prevKpiData.kpi3)).toString(),
-            }));
-        }
-    }, [kpi5, kpi1, kpi10]);
-
-    useEffect(() => {
-        const totalRepairTime = repairTime + timer;
-        setKpiData((prevKpiData) => ({
-            ...prevKpiData,
-            kpi3: totalRepairTime + 's',
-        }));
-    }, [repairTime, timer]);
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setTimer((prevTimer) => prevTimer + 1);
-        }, 1000);
-
-        return () => clearInterval(interval);
-    }, []);
-
-    const handleInputChange = (event) => {
-        setScannerInput(event.target.value);
-    };
-
-    const handleInputSubmit = (event) => {
-        if (event.key === 'Enter') {
-            setShowRaquetteSection(true);
-            setRaquetteName(scannerInput);
-            console.log('Scanned Input:', scannerInput);
-            setScannerInput('');
-        }
-    };
+    const handleFinish = async () => {
+        navigate(`/experience/${idexp}/operateur/${idop}/configtache`);
+    }
 
     const handleRepair = () => {
-        setKpiData((prevKpiData) => {
-            const newKpi2 = parseInt(prevKpiData.kpi2) + 1;
+        setState(prevState => {
+            const analyseData = {
+                dateDebut: prevState.dateDebutScan,
+                dateFin: new Date().toISOString(),
+                isErreur: 1,
+                kpis: prevState.kpiData
+            }
+            createAnalyse(idexp, idop, idtac, raquettes.find(r => r.nomRaquette === prevState.raquetteName).idRaquette, analyseData);
+            setTextSnackbar(`Vous venez de réparer ${prevState.raquetteName}`);
+
+            setRaquettes(prev => prev.map(raquette => {
+                if (raquette.nomRaquette === prevState.raquetteName) {
+                    return { ...raquette, isScanned: true }
+                }
+
+                return raquette
+            }
+            ));
+
+            const newKpi2 = parseInt(prevState.kpiData.kpi2) + 1;
             const kpi4 = (100 * newKpi2) / 30;
-
-            const tempsObjectifDuMoment = kpi5 ? parseInt(kpi5) : 0;
-            const kpi3Value = parseInt(prevKpiData.kpi3);
-
-            const kpi5Value = kpi3Value !== 0 ? (100 * tempsObjectifDuMoment) / kpi3Value : 0;
+            const tempsObjectif = calculateObjectiveTime();
+            const kpi5Value = ((100 * tempsObjectif) / parseInt(prevState.kpiData.kpi3)).toFixed(2);
 
             return {
-                ...prevKpiData,
-                kpi2: newKpi2.toString(),
-                kpi4: kpi4.toFixed(2) + '%',
-                kpi5: kpi5Value.toFixed(2) + '%',
+                ...prevState,
+                kpiData: {
+                    ...prevState.kpiData,
+                    kpi2: newKpi2.toString(),
+                    kpi4: `${kpi4.toFixed(0)}%`,
+                    kpi5: kpi5Value
+                },
+                showRaquetteSection: false,
+                raquetteName: '',
             };
+        });
+    };
+
+    const handleCloseSnackbar = () => {
+        setTextSnackbar('');
+    };
+
+    const handleValidate = () => {
+        setState(prevState => {
+            const analyseData = {
+                dateDebut: prevState.dateDebutScan,
+                dateFin: new Date().toISOString(),
+                isErreur: 0,
+                kpis: prevState.kpiData
+            }
+            createAnalyse(idexp, idop, idtac, raquettes.find(r => r.nomRaquette === prevState.raquetteName).idRaquette, analyseData);
+            setTextSnackbar(`Vous venez de valider ${prevState.raquetteName}`);
+            setRaquettes(prev => prev.map(raquette => {
+                if (raquette.nomRaquette === prevState.raquetteName) {
+                    return { ...raquette, isScanned: true }
+                }
+
+                return raquette
+            }
+            ));
+            return {
+                ...prevState,
+                showRaquetteSection: false,
+                raquetteName: '',
+            }
         });
 
         console.log('Réparer clicked');
     };
 
     const handleThrowAway = () => {
-        setKpiData((prevKpiData) => {
-            const newKpi6 = parseInt(prevKpiData.kpi6) + 1;
+        setState(prevState => {
+            const analyseData = {
+                dateDebut: prevState.dateDebutScan,
+                dateFin: new Date().toISOString(),
+                isErreur: 2,
+                kpis: prevState.kpiData
+            }
+            createAnalyse(idexp, idop, idtac, raquettes.find(r => r.nomRaquette === prevState.raquetteName).idRaquette, analyseData);
+            setTextSnackbar(`Vous venez de jeter ${prevState.raquetteName}`);
+
+            setRaquettes(prevRaquettes =>
+                prevRaquettes.map(raquette =>
+                    raquette.nomRaquette === prevState.raquetteName
+                        ? { ...raquette, isScanned: true }
+                        : raquette
+                )
+            );
             return {
-                ...prevKpiData,
-                kpi6: newKpi6.toString(),
-            };
+
+                ...prevState,
+                kpiData: {
+                    ...prevState.kpiData,
+                    kpi6: (parseInt(prevState.kpiData.kpi6) + 1).toString()
+                },
+                showRaquetteSection: false,
+                raquetteName: '',
+            }
         });
-        console.log('Jeter clicked');
     };
 
-    const handleNextRaquette = () => {
-        setTimer(0);
-        setRepairTime(0);
-        setShowRaquetteSection(false);
-        console.log('Raquette Suivante clicked');
+    const calculateObjectiveTime = () => {
+        return Object.entries(ERROR_TIMES).reduce((total, [error, time]) =>
+            total + (time * (ERROR_FREQUENCIES[error] || 0)), TIME_CYCLE);
     };
 
     const formatTime = (seconds) => {
@@ -186,7 +198,214 @@ const KpiPage = () => {
         return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
     };
 
-    if (loading) {
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (!/^(?:input|textarea|select|button)$/i.test(e.target.tagName)) {
+                if (e.key !== 'Enter' && e.key !== 'Shift') {
+                    setState(prev => ({
+                        ...prev,
+                        scannerInput: prev.scannerInput + e.key
+                    }));
+                } else if (e.key === 'Enter') {
+                    setState(prev => {
+                        const currentState = { ...prev };
+
+                        if (!currentState.showRaquetteSection) {
+                            const raquette = raquettes.find(r => r.nomRaquette === currentState.scannerInput);
+
+                            if (raquette) {
+                                if (raquette.isScanned) {
+                                    setTextSnackbar(`La raquette ${currentState.scannerInput} a déjà été scannée`);
+                                    return { ...currentState, scannerInput: ''};
+                                } else {
+                                    return {
+                                        ...currentState,
+                                        showRaquetteSection: true,
+                                        raquetteName: currentState.scannerInput,
+                                        scannerInput: '',
+                                        dateDebutScan:new Date().toISOString(),
+
+                                    };
+                                }
+                            } else {
+                                setTextSnackbar(`La raquette ${currentState.scannerInput} n'existe pas`);
+                                return { ...currentState, scannerInput: '' };
+                            }
+                        } else {
+                            switch (currentState.scannerInput.trim()) {
+                                case 'Valider':
+                                    handleValidate();
+                                    break;
+                                case 'Erreur':
+                                case 'Jeter':
+                                    handleThrowAway();
+                                    break;
+                                case 'Reparer':
+                                    handleRepair();
+                                    break;
+                                default:
+                                    console.log(currentState.scannerInput);
+                                    break;
+                            }
+                            return { ...currentState, scannerInput: '' };
+                        }
+                    });
+                }
+            }
+        };
+
+        const raquettesNotScanned = raquettes.filter(raquette => !raquette.isScanned);
+
+        if (raquettesNotScanned.length === 0 && !state.loading && !state.error) {
+            handleFinish();
+        }
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+
+        // eslint-disable-next-line
+    }, [raquettes]);
+
+    useEffect(() => {
+        const initRaquettesAndVisibiliteKpi = async () => {
+            const fetchedRaquettes = await getRaquettes(idexp);
+            const erreurs = await getErreurs(idexp);
+            const erreursToShow = await getErreurToShow(idexp, idop, idtac);
+            // Ajouter isScanned: false à chaque raquette
+            const raquettesWithScanStatus = fetchedRaquettes.map(raquette =>  {
+                return{
+                    ...raquette,
+                    isScanned: false,
+                    erreur: erreurs.find(erreur => erreur.id === raquette.idErreur && erreursToShow.includes(raquette.idRaquette))
+                }
+                });
+            setRaquettes(raquettesWithScanStatus);
+
+            const visibiliteKpi = await getVisibiliteKpi(idexp, idop, idtac);
+            const kpiToShow = visibiliteKpi.visibiliteKpi.split(',');
+            const kpi1Value = await getKpi1(idexp, idop, idtac);
+
+            setState(prev => ({
+                ...prev,
+                visibiliteKpi: kpiToShow,
+                kpi1Value: kpi1Value.tempsCible
+            }));
+        };
+
+        const initializeData = async () => {
+            try {
+                await initRaquettesAndVisibiliteKpi();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                setState(prev => ({ ...prev, loading: false }));
+            } catch (err) {
+                setState(prev => ({
+                    ...prev,
+                    error: err.message,
+                    loading: false
+                }));
+            }
+        };
+
+        initializeData();
+        // eslint-disable-next-line
+    }, [idexp, idop, idtac]);
+
+
+    useEffect(() => {
+        const handleUpdateKpiData = async () => {
+            if (!state.raquetteName) return;
+
+            try {
+                const [
+                    nbRaquettes,
+                    kpi2Data,
+                    kpi5Data,
+                    kpi10Data,
+                ] = await Promise.all([
+                    getNombreRaquettes(idexp, idop, idtac),
+                    getKpi2(idexp, idop, idtac),
+                    getKpi5(idexp),
+                    getKpi10(idexp, idop, idtac),
+                ]);
+
+                const currentRaquette = raquettes.find(
+                    (raquette) => raquette.nomRaquette === state.raquetteName
+                );
+
+                if (!currentRaquette) return;
+
+                const kpi9Data = await getKpi9(
+                    idexp,
+                    idop,
+                    idtac,
+                    currentRaquette.idRaquette
+                );
+
+                
+                setState(prev => {
+                    
+                    const kpi7Value = parseInt(prev.kpiData.kpi6) + kpi10Data.erreursNonDetectees;
+
+                    const kpi1ToSeconds = parseInt(prev.kpi1Value.split(':')[0]) * 60 + parseInt(prev.kpi1Value.split(':')[1]);
+
+                    const kpi8 = (100 * (kpi2Data.nbRaquettesControlees - kpi7Value) / kpi2Data.nbRaquettesControlees).toFixed(2);
+
+                    return {
+                        ...prev,
+                        kpiData: {
+                            kpi1: prev.kpi1Value,
+                            kpi2: kpi2Data.nbRaquettesControlees,
+                            kpi3: prev.kpiData.kpi3,
+                            kpi4: (100 * kpi2Data.nbRaquettesControlees / nbRaquettes).toFixed(2) + '%',
+                            kpi5: kpi5Data.kpi5 + 's',
+                            kpi6: prev.kpiData.kpi6,
+                            kpi7: kpi7Value,
+                            kpi8: isNaN(kpi8)?'0.00':kpi8 + '%',
+                            kpi9: kpi9Data.tempsReparation,
+                            kpi10: kpi10Data.erreursNonDetectees,
+                            kpi11: kpi1ToSeconds - prev.reamingTime + 's'
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error updating KPI data:', error);
+                setTextSnackbar('Erreur lors de la mise à jour des KPIs');
+            }
+        };
+
+        handleUpdateKpiData();
+        // eslint-disable-next-line
+    }, [state.raquetteName, idexp, idop, idtac, raquettes]);
+
+    useEffect(() => {
+        let interval;
+        if (state.showRaquetteSection) {
+            interval = setInterval(() => {
+                setState(prev => {
+                    const newTimer = prev.timer + 1;
+                    const kpi3Value = prev.timer + 1;
+
+                    return {
+                        ...prev,
+                        timer: newTimer,
+                        reamingTime: prev.reamingTime + 1,
+                        kpiData: {
+                            ...prev.kpiData,
+                            kpi3: `${kpi3Value}s`,
+                            kpi11: (parseInt(prev.kpi1Value.split(':')[0]) * 60 + parseInt(prev.kpi1Value.split(':')[1]) - prev.reamingTime) + 's'
+                        }
+                    };
+                });
+            }, 1000);
+        }
+        return () => {
+            clearInterval(interval);
+            setState(prev => ({ ...prev, reamingTime: 0 }));
+        };
+        // eslint-disable-next-line
+    }, [state.showRaquetteSection]);
+
+    if (state.loading) {
         return (
             <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
                 <CircularProgress />
@@ -194,111 +413,96 @@ const KpiPage = () => {
         );
     }
 
-    if (error) {
+    if (state.error) {
         return (
             <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
-                <Typography variant="h6" color="error">
-                    Error: {error}
-                </Typography>
+                <Card>
+                    <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                        <WarningIcon color="error" sx={{ fontSize: 48 }} />
+                        <Typography color="error">Error: {state.error}</Typography>
+                    </CardContent>
+                </Card>
             </Box>
         );
     }
 
     return (
-        <Container maxWidth="lg" style={{ marginTop: '20px' }}>
-            <Grid container spacing={4}>
-                {/* KPI Display Section */}
-                <Grid item xs={12} md={6}>
-                    <Paper elevation={3} style={{ padding: '20px' }}>
-                        <Typography variant="h5" gutterBottom>
-                            KPI Data
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+            {!state.showRaquetteSection ? (
+                <Card sx={{ maxWidth: 600, margin: '0 auto' }}>
+                    <CardHeader title="Scanner une raquette" />
+                    <CardContent>
+                        <Typography variant="body1" sx={{ mb: 2 }}>
+                            Scannez le code de la raquette...
                         </Typography>
-                        <Box>
-                            {Object.entries(kpiData).map(([key, value]) => (
-                                <Typography key={key} variant="body1" gutterBottom>
-                                    {key === 'kpi1' ? 'Temps cible (kpi1)' :
-                                     key === 'kpi2' ? 'Nb de raquettes contrôlées (kpi2)' :
-                                     key === 'kpi3' ? 'Temps écoulé (kpi3)' :
-                                     key === 'kpi4' ? 'Taux d’avancement (en %) (kpi4)' :
-                                     key === 'kpi6' ? 'Nb de raquettes jetées (kpi6)' :
-                                     key === 'kpi5' ? 'Productivité à l’instant t (%) (kpi5)' : key
-                                    }
-                                    {`: ${value}`}
-                                </Typography>
-                            ))}
-                        </Box>
-                    </Paper>
-                </Grid>
-
-                {/* Scanner Input Section */}
-                <Grid item xs={12} md={6}>
-                    <Paper elevation={3} style={{ padding: '20px', textAlign: 'center' }}>
-                        <Typography variant="h5" gutterBottom>
-                            Scanner Input
-                        </Typography>
-                        <Box display="flex" flexDirection="column" gap={2}>
-                            <TextField
-                                label="Scanner Input"
-                                variant="outlined"
-                                value={scannerInput}
-                                onChange={handleInputChange}
-                                onKeyDown={handleInputSubmit}
-                                placeholder="Scan or type here"
-                            />
-                        </Box>
-                    </Paper>
-                </Grid>
-
-                {/* Raquette Image and Name Section */}
-                {showRaquetteSection && (
-                    <Grid item xs={12}>
-                        <Paper elevation={3} style={{ padding: '20px', textAlign: 'center' }}>
-                            <Typography variant="h6" gutterBottom>
-                                Nom de la raquette : {raquetteName || 'Scannez une raquette pour afficher son nom'}
+                    </CardContent>
+                </Card>
+            ) : (
+                <>
+                    <Grid container width={"100%"} justifyContent={"space-around"}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <TimerIcon sx={{ fontSize: 30 }} />
+                            <Typography variant="h4">
+                                {formatTime(state.timer)}
                             </Typography>
-                            <img
-                                src={raquetteImage}
-                                alt="Raquette"
-                                style={{ maxWidth: '100%', height: 'auto', marginBottom: '10px' }}
-                            />
-                        </Paper>
+                        </Box>
                     </Grid>
-                )}
+                    <Grid container height={"70vh"} width={"100%"} justifyContent={"space-between"} alignItems={"center"} sx={{ mt: 4 }}>
+                        <Grid item xs={12} md={6} sx={{ display: 'flex' }} width={"45%"}>
+                            <Card sx={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+                                <CardHeader title="Indicateurs KPI" />
+                                <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                    {Object.entries(state.kpiData).map(([key, value]) => {
+                                        if (!state.visibiliteKpi.includes(key.toUpperCase())) return null;
+                                        return (
+                                            <Box key={key} sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                                                <Typography variant="subtitle1">{KPI_LABELS[parseInt(key.slice(3)) - 1]}</Typography>
+                                                <Typography>{value}</Typography>
+                                            </Box>)
+                                    })}
+                                </CardContent>
+                            </Card>
+                        </Grid>
 
-                {/* Action Buttons Section */}
-                {showRaquetteSection && (
-                    <Grid item xs={12} md={6}>
-                        <Paper elevation={3} style={{ padding: '20px', textAlign: 'center' }}>
-                            <Typography variant="h5" gutterBottom>
-                                Actions
-                            </Typography>
-                            <Box display="flex" flexDirection="column" gap={2}>
-                                <Button variant="contained" color="primary" onClick={handleRepair}>
-                                    Réparer
-                                </Button>
-                                <Button variant="contained" color="secondary" onClick={handleThrowAway}>
-                                    Jeter
-                                </Button>
-                                <Button variant="contained" color="success" onClick={handleNextRaquette}>
-                                    Raquette Suivante
-                                </Button>
-                                <Button variant="contained" color="info" onClick={exportToExcel}>
-                                    Exporter les KPI en Excel
-                                </Button>
-                            </Box>
-                        </Paper>
+                        <Grid item xs={12} md={6} sx={{ display: 'flex' }} width={"45%"}>
+                            <Card sx={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+                                <CardHeader title={`Raquette ${state.raquetteName}`} />
+                                <CardContent sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <Box
+                                        component="img"
+                                        src={raquettes.find(r => r.nomRaquette === state.raquetteName).erreur?.image ? getImageByPath(raquettes.find(r => r.nomRaquette === state.raquetteName).erreur?.image) : errorImage}
+                                        alt="Raquette"
+                                        sx={{
+                                            width: '100%',
+                                            height: 'auto',
+                                            borderRadius: 1,
+                                            maxHeight: '300px',
+                                            objectFit: 'contain'
+                                        }}
+                                    />
+                                </CardContent>
+                            </Card>
+                        </Grid>
                     </Grid>
-                )}
-            </Grid>
 
-            {/* Timer Section */}
-            <Paper elevation={3} style={{ padding: '10px', textAlign: 'center', marginTop: '20px' }}>
-                <Typography variant="h6" gutterBottom>
-                    Timer: {formatTime(timer)}
-                </Typography>
-            </Paper>
+                </>
+            )}
+            <Snackbar
+                open={textSnackbar !== ''}
+                autoHideDuration={6000}
+                onClose={() => handleCloseSnackbar()}
+                message={textSnackbar}
+                action={<IconButton
+                    size="small"
+                    aria-label="close"
+                    color="inherit"
+                    onClick={() => handleCloseSnackbar()}
+                >
+                    <CloseIcon fontSize="small" />
+                </IconButton>}
+            />
         </Container>
     );
 };
 
-export default KpiPage;
+export default KpiDashboard;

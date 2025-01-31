@@ -20,7 +20,7 @@ const Home = () => {
     nom: "",
     nombreTache: 1,
     option: "A",
-    Tmoy: 10
+    Tmoy: "17:42"
   });
 
   useEffect(() => {

@@ -24,3 +24,27 @@ export const getNbTacheParOperateur = async (idExp, idOpe) => {
   }
   return await response.json();
 }
+
+export const getVisibiliteKpi = async (idExp, idOpe, idTache) => {
+  const response = await fetch(`${API_URL}/experience/${idExp}/operator/${idOpe}/tache/${idTache}/getVisibiliteKpi`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch tache count: ${response.statusText}`);
+  }
+  return await response.json();
+}
+
+export const getErreurToShow = async (idExp, idOpe, idTache) => {
+  const response = await fetch(`${API_URL}/experience/${idExp}/operator/${idOpe}/tache/${idTache}/getErreurAffiche`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch tache count: ${response.statusText}`);
+  }
+  return await response.json();
+}
+
+export const exportTache = async (idExp, idOpe, idTache) => {
+  const response = await fetch(`${API_URL}/experience/${idExp}/operator/${idOpe}/tache/${idTache}/export`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch tache count: ${response.statusText}`);
+  }
+  return await response.json();
+}

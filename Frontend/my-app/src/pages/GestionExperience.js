@@ -43,8 +43,9 @@ function GestionExperience() {
     const [newOperator, setNewOperator] = useState({
         nom: '',
         prenom: '',
-        nivExp: '50'
+        nivExp: '1'
     });
+
 
     const handleStartSequence = () => {
         setOpenOperatorModal(true);
@@ -68,7 +69,7 @@ function GestionExperience() {
             const data = await response.json();
 
             if (data.state === 'success') {
-                navigate(`/experience/${idexp}/tache/${data.id}`);
+                navigate(`/experience/${idexp}/operateur/${data.id}/configtache`);
             }
         } catch (error) {
             console.error('Erreur lors de la création de l\'opérateur:', error);
@@ -239,8 +240,8 @@ function GestionExperience() {
                         name="radio-buttons-group"
                     >
                         <FormControlLabel control={<Radio onChange={() => handleOptionChange("A")} value={"A"} />} label="Option A: Tc = Tmoy" />
-                        <FormControlLabel control={<Radio onChange={() => handleOptionChange("B")} value={"B"} />} label="Option B: Tc = Tmoy * (24/30)" />
-                        <FormControlLabel control={<Radio onChange={() => handleOptionChange("C")} value={"C"} />} label="Option C: Tc = Tmoy * (Nombre de raquettes / 24) + (T1 + T2 + ... + T6)" />
+                        <FormControlLabel control={<Radio onChange={() => handleOptionChange("B")} value={"B"} />} label="Option B: Tc = Tmoy * (30/24)" />
+                        <FormControlLabel control={<Radio onChange={() => handleOptionChange("C")} value={"C"} />} label="Option C: Tc = Tmoy + (T1 + T2 + ... + T6)" />
                         <FormControlLabel control={<Radio onChange={() => handleOptionChange("D")} value={"D"} />} label="Option D: Option A * expertise" />
                         <FormControlLabel control={<Radio onChange={() => handleOptionChange("E")} value={"E"} />} label="Option E: Option B * expertise" />
                         <FormControlLabel control={<Radio onChange={() => handleOptionChange("F")} value={"F"} />} label="Option F: Option C * expertise" />
@@ -313,9 +314,11 @@ function GestionExperience() {
                             label="Niveau d'expérience"
                             onChange={(e) => setNewOperator({ ...newOperator, nivExp: e.target.value })}
                         >
-                            <MenuItem value="50">50%</MenuItem>
-                            <MenuItem value="100">100%</MenuItem>
-                            <MenuItem value="200">200%</MenuItem>
+                            <MenuItem value="1.2">Débutant (120%)</MenuItem>
+                            <MenuItem value="1.1">Novice (110%)</MenuItem>
+                            <MenuItem value="1">Normal (100%)</MenuItem>
+                            <MenuItem value="0.9">Avancé (90%)</MenuItem>
+                            <MenuItem value="0.8">Expert (80%)</MenuItem>
                         </Select>
                     </FormControl>
                 ]}

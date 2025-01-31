@@ -15,6 +15,21 @@ export const getErreurs = async (experienceId) => {
     }
 };
 
+export const getErreur = async (experienceId, erreurId) => {
+    try {
+        const response = await fetch(`${API_URL}/experience/${experienceId}/erreur/${erreurId}`);
+        const data = await response.json();
+        return {
+            ...data,
+            id: data.idErreur,
+            idErreur: undefined
+        };
+    } catch (error) {
+        console.error('Erreur lors de la récupération de l\'erreur:', error);
+        throw error;
+    }
+}
+
 export const createErreur = async (experienceId, erreurData) => {
     try {
         const formData = new FormData();
@@ -81,3 +96,7 @@ export const updateErreur = async (experienceId, erreurId, erreurData) => {
         throw error;
     }
 };
+
+export const getImageByPath = (path) => {
+    return `${API_URL}/${path}`;
+}
