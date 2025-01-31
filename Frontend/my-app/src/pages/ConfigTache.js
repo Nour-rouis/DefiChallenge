@@ -47,7 +47,7 @@ export default function ConfigTache() {
     try {
       const data = await getNbTacheParOperateur(idexp, idop);
       const experience = await getExperience(idexp);
-      if (data == experience.nombreTache) {
+      if (data === experience.nombreTache) {
         navigate(`/experience/${idexp}/`);
       }
       setNbTache(data + 1);
@@ -58,7 +58,7 @@ export default function ConfigTache() {
 
   const handleGetNbRaquetteErreur = async () => {
     try {
-      const data = await getNbRaquetteErreur(1);
+      const data = await getNbRaquetteErreur(idexp);
       setRaqErreur(data.count);
     } catch (error) {
       console.error('Erreur lors de la récupération du nombre de raquette erreur:', error);

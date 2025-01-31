@@ -1,6 +1,7 @@
 import os
 import random
-from flask import Flask, jsonify, request, send_file
+from pandas import DataFrame
+from flask import Flask, jsonify, request, send_file, send_from_directory
 from flask_cors import CORS
 from connexion import get_db_connection
 import dao.experiencedao as expDao
@@ -16,6 +17,10 @@ app = Flask(__name__)
 CORS(app)
 
 conn = get_db_connection()
+
+@app.route('/images/<path:filename>')
+def serve_image(filename):
+    return send_from_directory(imagesFolder, filename)
 
 def add_times(time1, time2):
     """
@@ -414,7 +419,7 @@ def getErreurAffiche(idexp, idop, idtache):
         for raqWithErreurs in raqsWithErreurs:
             idRaqErreursAAffiche.append(raqWithErreurs['idRaquette'])
 
-        iaNbErreur = tacheDao.get_by_id(idtache)['iaNbErreurDetecte']
+        iaNbErreur = tacheDao.get_by_id(tacheDao.get_by_idOperateur(idop)[idtache-1]['idTache'])['iaNbErreurDetecte']
         random.seed(iaNbErreur + idexp)
         raqsAAffiche = random.sample(idRaqErreursAAffiche, iaNbErreur)
         return jsonify(raqsAAffiche)
@@ -486,6 +491,7 @@ def getKpi1(idexp, idop, idtache):
 @app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/getkpi2", methods=['GET'])
 def raquettesControlees(idexp, idop, idtache):
     if request.method == "GET":
+        idtache = tacheDao.get_by_idOperateur(idop)[idtache-1]['idTache']
         nbRaquettesControlees = len(anaDao.get_by_idTache(idtache))
         return jsonify({'nbRaquettesControlees': nbRaquettesControlees}), 200
     
@@ -494,6 +500,7 @@ def raquettesControlees(idexp, idop, idtache):
 @app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/getkpi6", methods=['GET'])
 def raquettesJetees(idexp, idop, idtache):
     if request.method == "GET":
+        idtache = tacheDao.get_by_idOperateur(idop)[idtache-1]['idTache']
         raquettes = raqDao.get_by_idExperience(idexp)
         analyses = anaDao.get_by_idTache(idtache)
 
@@ -528,6 +535,7 @@ def tempsReparation(idexp, idop, idtache, idraquette):
 @app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/getkpi10", methods=['GET'])
 def erreursNonDetectees(idexp, idop, idtache):
     if request.method == "GET":
+        idtache = tacheDao.get_by_idOperateur(idop)[idtache-1]['idTache']
         raquettes = raqDao.get_by_idExperience(idexp)
         analyses = anaDao.get_by_idTache(idtache)
 
@@ -542,8 +550,8 @@ def erreursNonDetectees(idexp, idop, idtache):
         
         return jsonify({'erreursNonDetectees': erreursNonDetectees}), 200
 # This is gonna calculate "tempsObjectifDuMoment" and not the KPI5 !!
-@app.route('/experience/<int:idexp>/get_kpi5', methods=['GET'])
-def get_kpi5(idexp):
+@app.route('/experience/<int:idexp>/getkpi5', methods=['GET'])
+def getkpi5(idexp):
     if request.method == "GET":
         # Fetch experience data
         exp = expDao.get_by_id(idexp)
@@ -559,10 +567,10 @@ def get_kpi5(idexp):
             return jsonify({'state': 'error', 'message': 'No errors found for this experience'}), 404
 
         # Initialize T_values (tempsDefaut for each error)
-        error_times = {error['id']: float(error['tempsDefaut']) for error in errors}
+        error_times = {error['idErreur']: int(error['tempsDefaut'].split(':')[0]) * 60 + int(error['tempsDefaut'].split(':')[1]) for error in errors}
 
         # Initialize frequency dictionary
-        error_frequencies = {error['id']: 0 for error in errors}
+        error_frequencies = {error['idErreur']: 0 for error in errors}
 
         # Fetch raquette data to count occurrences of each error
         raquettes = raqDao.get_by_idExperience(idexp)
@@ -605,6 +613,21 @@ def get_kpi10(idexp):  # Add 'idexp' as a parameter
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route("/experience/<int:idexp>/operator/<int:idop>/tache/<int:idtache>/export", methods=['GET'])
+def exportToCsv(idexp, idop, idtache):
+    if request.method == "GET":
+        idtachedeop = idtache
+        idtache = tacheDao.get_by_idOperateur(idop)[idtache-1]['idTache']
+        analyses = anaDao.get_by_idTache(idtache)
+        op = opDao.get_by_id(idop)
+        filename = "export_" + op['nom'] + "_" + op['prenom'] + "_" + str(idtache) + ".csv"
+        with open(filename, 'w') as file:
+            file.write("idRaquette;dateDebut;dateFin;isErreur;kpi1;kpi2;kpi3;kpi4;kpi5;kpi6;kpi7;kpi8;kpi9;kpi10;kpi11\n")
+            for analyse in analyses:
+                analyse['kpis'] = eval(analyse['kpis'])
+                file.write(str(analyse['idRaquette']) + ";" + analyse['dateDebut'] + ";" + analyse['dateFin'] + ";" + str(analyse['isErreur']) + ";" + str(analyse['kpis']['kpi1']) + ";" + str(analyse['kpis']['kpi2']) + ";" + str(analyse['kpis']['kpi3']) + ";" + str(analyse['kpis']['kpi4']) + ";" + str(analyse['kpis']['kpi5']) + ";" + str(analyse['kpis']['kpi6']) + ";" + str(analyse['kpis']['kpi7']) + ";" + str(analyse['kpis']['kpi8']) + ";" + str(analyse['kpis']['kpi9']) + ";" + str(analyse['kpis']['kpi10']) + ";" + str(analyse['kpis']['kpi11']) +"\n")
+        return send_file(filename, as_attachment=True)
 
 # import json
 # import os

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import raquetteImage from '../assets/images/Bouton ressort monté a l_envers.jpeg';
 import {
     Container,
     Grid2 as Grid,
@@ -20,16 +19,17 @@ import {
 import {
     getKpi1,
     getKpi2,
-    getKpi6,
     getKpi9,
     getKpi10,
-    getNombreRaquettes
+    getNombreRaquettes,
+    getKpi5
 } from '../utils/kpiApi';
 import { getRaquettes } from '../utils/RaquetteApi';
 import CloseIcon from '@mui/icons-material/Close';
-import { getVisibiliteKpi } from '../utils/tacheApi';
+import { getErreurToShow, getVisibiliteKpi } from '../utils/tacheApi';
 import { createAnalyse } from '../utils/analyseApi';
-
+import { getErreurs, getImageByPath } from '../utils/erreurApi';
+import errorImage from '../assets/images/AucuneErreur.jpeg';
 
 const KPI_LABELS = [
     'Temps cible',
@@ -52,16 +52,16 @@ function KpiDashboard() {
     const [state, setState] = useState({
         kpiData: {
             kpi1: 'Loading...',
-            kpi2: '0',
-            kpi3: '75s',
-            kpi4: '0%',
-            kpi5: '0',
+            kpi2: 'Loading...',
+            kpi3: '0s',
+            kpi4: 'Loading...',
+            kpi5: 'Loading...',
             kpi6: '0',
-            kpi7: '0',
-            kpi8: '0',
-            kpi9: '0',
-            kpi10: '0',
-            kpi11: '0'
+            kpi7: 'Loading...',
+            kpi8: 'Loading...',
+            kpi9: 'Loading...',
+            kpi10: 'Loading...',
+            kpi11: 'Loading...'
         },
         loading: true,
         error: null,
@@ -69,8 +69,10 @@ function KpiDashboard() {
         scannerInput: '',
         raquetteName: '',
         dateDebutScan: '',
+        reamingTime: 0,
         timer: 0,
         visibiliteKpi: [],
+        kpi1Value: '',
     });
 
     const [raquettes, setRaquettes] = useState([]);
@@ -113,7 +115,7 @@ function KpiDashboard() {
                 kpiData: {
                     ...prevState.kpiData,
                     kpi2: newKpi2.toString(),
-                    kpi4: `${kpi4.toFixed(2)}%`,
+                    kpi4: `${kpi4.toFixed(0)}%`,
                     kpi5: kpi5Value
                 },
                 showRaquetteSection: false,
@@ -221,7 +223,8 @@ function KpiDashboard() {
                                         showRaquetteSection: true,
                                         raquetteName: currentState.scannerInput,
                                         scannerInput: '',
-                                        dateDebutScan:new Date().toISOString()
+                                        dateDebutScan:new Date().toISOString(),
+
                                     };
                                 }
                             } else {
@@ -266,19 +269,26 @@ function KpiDashboard() {
     useEffect(() => {
         const initRaquettesAndVisibiliteKpi = async () => {
             const fetchedRaquettes = await getRaquettes(idexp);
+            const erreurs = await getErreurs(idexp);
+            const erreursToShow = await getErreurToShow(idexp, idop, idtac);
             // Ajouter isScanned: false à chaque raquette
-            const raquettesWithScanStatus = fetchedRaquettes.map(raquette => ({
-                ...raquette,
-                isScanned: false
-            }));
+            const raquettesWithScanStatus = fetchedRaquettes.map(raquette =>  {
+                return{
+                    ...raquette,
+                    isScanned: false,
+                    erreur: erreurs.find(erreur => erreur.id === raquette.idErreur && erreursToShow.includes(raquette.idRaquette))
+                }
+                });
             setRaquettes(raquettesWithScanStatus);
 
             const visibiliteKpi = await getVisibiliteKpi(idexp, idop, idtac);
             const kpiToShow = visibiliteKpi.visibiliteKpi.split(',');
+            const kpi1Value = await getKpi1(idexp, idop, idtac);
 
             setState(prev => ({
                 ...prev,
-                visibiliteKpi: kpiToShow
+                visibiliteKpi: kpiToShow,
+                kpi1Value: kpi1Value.tempsCible
             }));
         };
 
@@ -299,6 +309,8 @@ function KpiDashboard() {
         initializeData();
         // eslint-disable-next-line
     }, [idexp, idop, idtac]);
+
+
     useEffect(() => {
         const handleUpdateKpiData = async () => {
             if (!state.raquetteName) return;
@@ -307,15 +319,13 @@ function KpiDashboard() {
                 const [
                     nbRaquettes,
                     kpi2Data,
-                    kpi6Data,
+                    kpi5Data,
                     kpi10Data,
-                    kpi1Data
                 ] = await Promise.all([
                     getNombreRaquettes(idexp, idop, idtac),
                     getKpi2(idexp, idop, idtac),
-                    getKpi6(idexp, idop, idtac),
+                    getKpi5(idexp),
                     getKpi10(idexp, idop, idtac),
-                    getKpi1(idexp, idop, idtac)
                 ]);
 
                 const currentRaquette = raquettes.find(
@@ -331,24 +341,32 @@ function KpiDashboard() {
                     currentRaquette.idRaquette
                 );
 
-                const kpi7Value = kpi6Data.raquettesJetees + kpi10Data.erreursNonDetectees;
+                
+                setState(prev => {
+                    
+                    const kpi7Value = parseInt(prev.kpiData.kpi6) + kpi10Data.erreursNonDetectees;
 
-                setState(prev => ({
-                    ...prev,
-                    kpiData: {
-                        kpi1: kpi1Data.tempsCible,
-                        kpi2: kpi2Data.nbRaquettesControlees,
-                        kpi3: prev.kpiData.kpi3,
-                        kpi4: (100 * kpi2Data.nbRaquettesControlees / nbRaquettes).toFixed(2),
-                        kpi5: prev.kpiData.kpi5,
-                        kpi6: kpi6Data.raquettesJetees,
-                        kpi7: kpi7Value,
-                        kpi8: (100 * (kpi2Data.nbRaquettesControlees - kpi7Value) / kpi2Data.nbRaquettesControlees).toFixed(2),
-                        kpi9: kpi9Data.tempsReparation,
-                        kpi10: kpi10Data.erreursNonDetectees,
-                        kpi11: kpi1Data.tempsCible - prev.kpiData.kpi3
+                    const kpi1ToSeconds = parseInt(prev.kpi1Value.split(':')[0]) * 60 + parseInt(prev.kpi1Value.split(':')[1]);
+
+                    const kpi8 = (100 * (kpi2Data.nbRaquettesControlees - kpi7Value) / kpi2Data.nbRaquettesControlees).toFixed(2);
+
+                    return {
+                        ...prev,
+                        kpiData: {
+                            kpi1: prev.kpi1Value,
+                            kpi2: kpi2Data.nbRaquettesControlees,
+                            kpi3: prev.kpiData.kpi3,
+                            kpi4: (100 * kpi2Data.nbRaquettesControlees / nbRaquettes).toFixed(2) + '%',
+                            kpi5: kpi5Data.kpi5 + 's',
+                            kpi6: prev.kpiData.kpi6,
+                            kpi7: kpi7Value,
+                            kpi8: isNaN(kpi8)?'0.00':kpi8 + '%',
+                            kpi9: kpi9Data.tempsReparation,
+                            kpi10: kpi10Data.erreursNonDetectees,
+                            kpi11: kpi1ToSeconds - prev.reamingTime + 's'
+                        }
                     }
-                }));
+                });
             } catch (error) {
                 console.error('Error updating KPI data:', error);
                 setTextSnackbar('Erreur lors de la mise à jour des KPIs');
@@ -365,19 +383,25 @@ function KpiDashboard() {
             interval = setInterval(() => {
                 setState(prev => {
                     const newTimer = prev.timer + 1;
-                    const kpi3Value = ((newTimer / 600) * 100).toFixed(2);
+                    const kpi3Value = prev.timer + 1;
+
                     return {
                         ...prev,
                         timer: newTimer,
+                        reamingTime: prev.reamingTime + 1,
                         kpiData: {
                             ...prev.kpiData,
-                            kpi3: `${kpi3Value}s`
+                            kpi3: `${kpi3Value}s`,
+                            kpi11: (parseInt(prev.kpi1Value.split(':')[0]) * 60 + parseInt(prev.kpi1Value.split(':')[1]) - prev.reamingTime) + 's'
                         }
                     };
                 });
             }, 1000);
         }
-        return () => clearInterval(interval);
+        return () => {
+            clearInterval(interval);
+            setState(prev => ({ ...prev, reamingTime: 0 }));
+        };
         // eslint-disable-next-line
     }, [state.showRaquetteSection]);
 
@@ -446,7 +470,7 @@ function KpiDashboard() {
                                 <CardContent sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                     <Box
                                         component="img"
-                                        src={raquetteImage}
+                                        src={raquettes.find(r => r.nomRaquette === state.raquetteName).erreur?.image ? getImageByPath(raquettes.find(r => r.nomRaquette === state.raquetteName).erreur?.image) : errorImage}
                                         alt="Raquette"
                                         sx={{
                                             width: '100%',

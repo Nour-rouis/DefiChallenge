@@ -60,6 +60,10 @@ const OperatorList = () => {
     // eslint-disable-next-line
   }, [idexp]);
 
+  const handleExport = async (operatorId) => {
+    window.location.href = `http://localhost:5000/experience/${idexp}/operator/${operatorId}/tache/1/export`;
+  };
+
   const handleDelete = async (operatorId) => {
     try {
       const response = await fetch(`http://localhost:5000/experience/${idexp}/operator/${operatorId}/delete`, {
@@ -87,6 +91,15 @@ const OperatorList = () => {
       width: 250,
       renderCell: (params) => (
         <Box>
+          <Button
+          sx={{ marginRight: 1 }}
+            variant="outlined"
+            color="success"
+            size="small"
+            onClick={() => handleExport(params.row.id)}
+          >
+            Exporter
+          </Button>
           <Button
             variant="outlined"
             color="error"

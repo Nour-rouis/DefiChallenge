@@ -96,3 +96,7 @@ export const updateErreur = async (experienceId, erreurId, erreurData) => {
         throw error;
     }
 };
+
+export const getImageByPath = (path) => {
+    return `${API_URL}/${path}`;
+}

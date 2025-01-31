@@ -34,6 +34,23 @@ export const getKpi2 = async (idexp, idop, idtache) => {
     }
 };
 
+export const getKpi5 = async (idexp) => {
+    if (!idexp) {
+        console.error("Experience ID is undefined");
+        return;
+    }
+    try {
+        const response = await fetch(`${API_URL}/experience/${idexp}/getkpi5`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error("Error fetching KPI5:", error);
+    }
+}
+
 export const getKpi6 = async (idexp, idop, idtache) => {
     if (!idexp) {
         console.error("Experience ID is undefined");

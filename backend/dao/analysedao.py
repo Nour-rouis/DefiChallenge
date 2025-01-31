@@ -18,7 +18,8 @@ def get_all():
                          "idTache": row[1], 
                          "dateDebut": row[2], 
                          "dateFin": row[3], 
-                         "isErreur": row[4]})
+                         "isErreur": row[4],
+                         "kpis": row[5]})
     return analyses
 
 def get_by_ids(idRaquette, idTache):
@@ -42,7 +43,8 @@ def get_by_ids(idRaquette, idTache):
             "idTache": row[1], 
             "dateDebut": row[2], 
             "dateFin": row[3], 
-            "isErreur": row[4]}
+            "isErreur": row[4],
+            "kpis": row[5]}
 
 def create(idRaquette, idTache, dateDebut, dateFin, isErreur, kpis):
     """
@@ -125,5 +127,6 @@ def get_by_idTache(idTache):
                          "idTache": row[1], 
                          "dateDebut": row[2], 
                          "dateFin": row[3], 
-                         "isErreur": row[4]})
+                         "isErreur": row[4],
+                         "kpis": row[5]})
     return analyses
