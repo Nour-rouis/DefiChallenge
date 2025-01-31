@@ -150,6 +150,8 @@ function KpiDashboard() {
                 raquetteName: '',
             }
         });
+
+        console.log('Réparer clicked');
     };
 
     const handleThrowAway = () => {
