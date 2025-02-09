@@ -1,9 +1,10 @@
 # DefiChallenge
 # BY TIME TO FIX Team
 
-# Project Title
+# TIME TO FIX
 
-A brief description of what your project does and its main features.
+"Time to Fix", a web application that helps operators manage their repair tasks efficiently by predicting the time needed to complete each task.
+This ensures everything is done on time, optimizing both productivity and accuracy. ⏱️💻
 
 ## Table of Contents
 
