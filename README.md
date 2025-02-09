@@ -1,5 +1,5 @@
 # DefiChallenge
-# BY TIME TO FIX Team
+# BY "TIME TO FIX" Team
 
 # TIME TO FIX
 
